@@ -1,0 +1,10 @@
+name 'plotly' is not defined
+name 'plotly' is not defined
+name 'plotly' is not defined
+name 'plotly' is not defined
+name 'plotly' is not defined
+name 'go' is not defined
+min() arg is an empty sequence
+min() arg is an empty sequence
+min() arg is an empty sequence
+min() arg is an empty sequence
