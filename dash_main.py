@@ -1,13 +1,17 @@
 import  sqlite3
 import pandas as pd
+
+from threading import Thread
 import dash
 import dash_html_components as html
 import dash_core_components as dcc
+import dash_table as dtable
 import plotly
 import logging
 from dash.dependencies import Output, State, Input
 import plotly.graph_objs as go
 
+import tweet_stream
 from collections import deque
 import dash_bootstrap_components as dbc
 
@@ -23,9 +27,20 @@ df.dropna(inplace=True)
 
 
 
+app = dash.Dash(__name__,external_stylesheets=[dbc.themes.BOOTSTRAP])
 
-
-app = dash.Dash(__name__)
+card_content = [
+    dbc.CardHeader("Card header"),
+    dbc.CardBody(
+        [
+            html.H5("Card title", className="card-title"),
+            html.P(
+                "This is some card content that we'll reuse",
+                className="card-text",
+            ),
+        ]
+    ),
+]
 
 app.layout = html.Div([
     html.H2("It is our app !!!",className="m-2",style={'text-align':'center'}),
@@ -33,7 +48,7 @@ app.layout = html.Div([
         id='sentiment_term',
         options=[
             {'label': 'Bitcoin', 'value': 'Bitcoin'},
-            {'label': 'Montreal', 'value': 'MTL'},
+            {'label': 'Ethereum', 'value': 'Ethereum'},
             {'label': 'San Francisco', 'value': 'SF'}
         ],
         value='Bitcoin',
@@ -89,19 +104,48 @@ def render_content(tab):
         return html.Div([
             html.H3('Tab content 1'),
             html.H4('Explanation of our Project'),
+            html.P('voici notre projet de advanced data analysis'),
+            html.P('etudiants en master de finance')
             
            
         ])
     elif tab == 'tab-2':
         return html.Div([
             html.H3('Tab content Dashboard'),
-            html.Div(className='row', children=[html.Div(dcc.Graph(id='live-graph', animate=True), className='col s12 m6 l6')]),
-            #html.Div(className='row', children=[html.Div(id="recent-tweets-table", className='col s12 m6 l6')])
+            html.Div(id='myChildren'),
             # Ajout de l'interval
         ])
     elif tab == 'tab-3':
         return html.Div([
-            html.H3('Tab content ML Model')
+            html.H3('Tab content ML Model'),
+            html.Div(
+    [
+        dbc.Row(
+            [
+                dbc.Col(dbc.Card(card_content, color="primary", inverse=True)),
+                dbc.Col(
+                    dbc.Card(card_content, color="secondary", inverse=True)
+                ),
+                dbc.Col(dbc.Card(card_content, color="info", inverse=True)),
+            ],
+            className="mb-4",
+        ),
+        dbc.Row(
+            [
+                dbc.Col(dbc.Card(card_content, color="success", inverse=True)),
+                dbc.Col(dbc.Card(card_content, color="warning", inverse=True)),
+                dbc.Col(dbc.Card(card_content, color="danger", inverse=True)),
+            ],
+            className="mb-4",
+        ),
+        dbc.Row(
+            [
+                dbc.Col(dbc.Card(card_content, color="light")),
+                dbc.Col(dbc.Card(card_content, color="dark", inverse=True)),
+            ]
+        ),
+    ]
+    )
         ])
     elif tab == 'tab-4':
         return html.Div([
@@ -114,7 +158,7 @@ def render_content(tab):
 
 # A mettre dans Un autre fichier pour être plus propre
 # Ajouter le volume en dessous
-@app.callback(Output('live-graph', 'figure'),
+@app.callback(Output('myChildren', 'children'),
               [Input(component_id='sentiment_term', component_property='value'),
               Input(component_id='tabs-styled-with-props', component_property='value')],
               events=[State('graph-update', 'interval')])
@@ -140,38 +184,37 @@ def update_graph_scatter(sentiment_term,tab):
 
             X = df.index 
             Y = df.sentiment_smoothed.values
+            
+            columns=[{'name': i,'id': i} for i in df.columns]
 
-            data = plotly.graph_objs.Scatter(
-                    x=X,
-                    y=Y,
-                    name='Scatter',
-                    mode= 'lines+markers'
-                    )
+            figstock = go.Figure()
 
-            return {'data': [data],'layout' : go.Layout(xaxis=dict(range=[min(X),max(X)]),
-                                                        yaxis=dict(range=[min(Y),max(Y)]),
-                                                        title='Cryptocurrency: {}'.format(sentiment_term))}
+            figstock.add_trace(go.Scatter(x=X, y= Y,line=dict(color='blue', width=1.2), name = sentiment_term))
+            figstock.update_layout(title_text= f'Stock Price of {sentiment_term}',yaxis_title=f'Polarity of Tweets about {sentiment_term}')
+
+            child = html.Div([
+                dcc.Graph(figure=figstock),
+                #create a datable on Dash -> à ajuster le layout
+                html.Div(className='row', children=[
+                    html.Div(dtable.DataTable(
+                                id='tableMonthly',
+                                data=df.head(3).to_dict('records'), # number of tweets in datable
+                                columns=columns,
+                                style_cell={'textAlign': 'left',
+                                'width': '40%'}),className='col s12 m6 l6')
+                ]),
+                
+            ]
+            )
+            
+
+            return child
         except Exception as e:
             logging.error(str(e))
 
 
-# @app.callback(Output('recent-tweets-table', 'children'),
-#               [Input(component_id='sentiment_term', component_property='value')])        
-# def update_recent_tweets(sentiment_term):
-#     try:
-#         if sentiment_term:
-#             df = pd.read_sql("SELECT sentiment.* FROM sentiment_fts fts LEFT JOIN sentiment ON fts.rowid = sentiment.id WHERE fts.sentiment_fts MATCH ? ORDER BY fts.rowid DESC LIMIT 10", conn, params=(sentiment_term+'*',))
-#         else:
-#             df = pd.read_sql("SELECT * FROM sentiment ORDER BY id DESC, unix DESC LIMIT 10", conn)
-
-#         df['date'] = pd.to_datetime(df['unix'], unit='ms')
-
-#         df = df.drop(['unix','id'], axis=1)
-#         df = df[['date','tweet','sentiment']]
-
-#         return generate_table(df, max_rows=10)
-#     except Exception as e:
-#         logging.error(str(e))
-
 if __name__ == '__main__':
+    # A voir beug pour scrap en continue les tweets
+    #Thread(target=tweet_stream.createStreamTwitter).start()
+    
     app.run_server(debug=True)

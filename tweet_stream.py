@@ -10,7 +10,7 @@ import time
 analyser = SentimentIntensityAnalyzer()
 
 # connect to my database
-conn = sqlite3.connect('twitter.db')
+conn = sqlite3.connect('twitter.db',check_same_thread=False)
 c = conn.cursor()
 
 def create_table():
@@ -26,12 +26,14 @@ class Listener(StreamListener):
         try:
             data = json.loads(data)
             tweet = unidecode(data['text'])
-            time_ms = data['timestamp_ms']
+            time_ms = data['timestamp_ms'] # à changer pour avori directment les liens
             vs = analyser.polarity_scores(tweet)
             sentiment = vs['compound']
             print(time_ms,tweet,sentiment)
             #insert data in SQL database
-            c.execute("INSERT INTO sentiment (unix, tweet, sentiment) VALUES (?, ?, ?)",(time_ms, tweet, sentiment))
+            #only english tweet
+            if data['lang'] == 'en':
+                c.execute("INSERT INTO sentiment (unix, tweet, sentiment) VALUES (?, ?, ?)",(time_ms, tweet, sentiment))
             conn.commit()
         except  KeyError as e:
             print(str(e))
@@ -47,7 +49,7 @@ def createStreamTwitter():
             auth.set_access_token(config.access_token, config.access_token_secret)
 
             twitterStream = Stream(auth, Listener())
-            twitterStream.filter(track=["Bitcoin"])
+            twitterStream.filter(track=["Bitcoin","Ethereum"])
         except Exception as e:
             print(str(e))
             time.sleep(5)
