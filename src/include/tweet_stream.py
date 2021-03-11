@@ -1,3 +1,5 @@
+# coding=utf-8
+
 import include.config as config
 from tweepy import Stream, OAuthHandler
 from tweepy.streaming import StreamListener
@@ -17,10 +19,10 @@ def create_table():
     c.execute("CREATE TABLE IF NOT EXISTS sentiment(unix REAL, tweet TEXT, sentiment REAL)")
     conn.commit()
 
-create_table()    
+create_table()
 
 
-#Create a class to scrap stream of tweet 
+#Create a class to scrap stream of tweet
 class Listener(StreamListener):
     def on_data(self,data):
         try:

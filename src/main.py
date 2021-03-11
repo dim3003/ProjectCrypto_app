@@ -1,3 +1,5 @@
+# coding=utf-8
+
 import  sqlite3
 import pandas as pd
 
@@ -65,8 +67,8 @@ def render_content(tab):
             #html.H4('Explanation of our Project'),
             #html.P('voici notre projet de advanced data analysis'),
             #html.P('etudiants en master de finance')
-            
-           
+
+
         ])
     elif tab == 'tab-2':
         return html.Div([
@@ -81,5 +83,5 @@ def render_content(tab):
 
 
 if __name__ == '__main__':
-    
+
     app.run_server(debug=True)
