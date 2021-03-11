@@ -11,13 +11,13 @@ import logging
 from dash.dependencies import Output, State, Input
 import plotly.graph_objs as go
 
-import tweet_stream
+import include.tweet_stream as ts
 from collections import deque
 import dash_bootstrap_components as dbc
 
 logging.basicConfig(filename='infos.log',level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
-conn = sqlite3.connect('twitter.db')
+conn = sqlite3.connect('./twitter.db')
 c = conn.cursor()
 
 df = pd.read_sql("SELECT * FROM sentiment WHERE tweet LIKE '%bitcoin%' ORDER BY unix DESC LIMIT 1000", conn)
@@ -215,6 +215,6 @@ def update_graph_scatter(sentiment_term,tab):
 
 if __name__ == '__main__':
     # A voir beug pour scrap en continue les tweets
-    #Thread(target=tweet_stream.createStreamTwitter).start()
+    Thread(target=ts.createStreamTwitter).start()
     
     app.run_server(debug=True)

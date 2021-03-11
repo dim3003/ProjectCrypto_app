@@ -1,4 +1,4 @@
-import config
+import include.config as config
 from tweepy import Stream, OAuthHandler
 from tweepy.streaming import StreamListener
 import json
@@ -10,7 +10,7 @@ import time
 analyser = SentimentIntensityAnalyzer()
 
 # connect to my database
-conn = sqlite3.connect('twitter.db',check_same_thread=False)
+conn = sqlite3.connect('./twitter.db',check_same_thread=False)
 c = conn.cursor()
 
 def create_table():
