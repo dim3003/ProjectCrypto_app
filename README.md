@@ -1,3 +1,16 @@
+## Install project and librairies
+
+1) cloner le projet sur son ordinateur
+
+```bash
+git clone https://github.com/GuillaumePv/ProjetCrypto_app.git
+```
+2) installer les librairies nécessaires pour le projet
+
+```bash
+pip install requirements.txt
+```
+
 ## github for stream twitt project
 https://github.com/Sentdex/socialsentiment
 
