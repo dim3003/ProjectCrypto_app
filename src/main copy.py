@@ -162,7 +162,7 @@ def render_content(tab):
               [Input(component_id='sentiment_term', component_property='value'),
               Input(component_id='tabs-styled-with-props', component_property='value')],
               events=[State('graph-update', 'interval')])
-              
+
 def update_graph_scatter(sentiment_term,tab):
     if tab == 'tab-2':
         try:

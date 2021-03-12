@@ -18,9 +18,12 @@ import include.tweet_stream as ts
 from collections import deque
 import dash_bootstrap_components as dbc
 
-import social
 
 logging.basicConfig(filename='infos.log',level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+
+#################
+# Database config
+#################
 
 conn = sqlite3.connect('./twitter.db')
 c = conn.cursor()
@@ -30,12 +33,23 @@ df.sort_values('unix',inplace=True)
 df['smoothed_sentiment'] = df['sentiment'].rolling(int(len(df)/5)).mean()
 df.dropna(inplace=True)
 
+# Index as date
+###############
 
-# permet de pouvoir utiliser booststrap => ça va faire BEAU !!!!
+df['date'] = pd.to_datetime(df['unix'],unit='ms')
+df.index = df['date']
+df.set_index('date', inplace=True)
+
+# App creation with BOOTSTRAP
+#############################
+
 app = dash.Dash(__name__,external_stylesheets=[dbc.themes.BOOTSTRAP])
+
 
 app.layout = html.Div([
     html.H2("Crypto project",className="m-2",style={'text-align':'center'}),
+
+    #Dropdown to choose Crypto
      dcc.Dropdown(
         id='sentiment_term',
         options=[ #options des valeurs du dropdown
@@ -65,6 +79,10 @@ app.layout = html.Div([
               Input('tabs-styled-with-props', 'value'))
 
 def render_content(tab):
+
+    #Home tab
+    ############
+
     if tab == 'tab-1':
         return html.Div([
             html.H3('Tab content Home'),
@@ -74,6 +92,10 @@ def render_content(tab):
 
 
         ])
+
+    #Technicals tab
+    ############
+
     elif tab == 'tab-2':
         return html.Div([
             html.H3('Tab content Analysis'),
@@ -81,12 +103,34 @@ def render_content(tab):
             # Ajout de l'interval
         ])
 
-    ############
     #Social tab
     ############
 
     elif tab == 'tab-3':
-        return social.social()
+        currency = component_id
+        return html.Div([
+            html.Div(
+                dcc.Graph(
+                    id='twitter',
+                    figure={
+                        'data': [
+                            go.Scatter(
+                                x=df.index,
+                                y=df['smoothed_sentiment'],
+                            )],
+
+                            'layout': go.Layout(
+                                title='Twitter sentiment of Bitcoin',
+                                xaxis={'title': 'Time'},
+                                yaxis={'title': 'Sentiment'},
+                                margin={'l': 80, 'b': 40, 't': 90, 'r': 40})
+                    },
+                    style={
+                        'width': '60%',
+                        'display': 'inline-block'
+                        }
+                    ))
+            ])
 
 if __name__ == '__main__':
 
