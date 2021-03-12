@@ -107,30 +107,9 @@ def render_content(tab):
     ############
 
     elif tab == 'tab-3':
-        currency = component_id
-        return html.Div([
-            html.Div(
-                dcc.Graph(
-                    id='twitter',
-                    figure={
-                        'data': [
-                            go.Scatter(
-                                x=df.index,
-                                y=df['smoothed_sentiment'],
-                            )],
+        import social
 
-                            'layout': go.Layout(
-                                title='Twitter sentiment of Bitcoin',
-                                xaxis={'title': 'Time'},
-                                yaxis={'title': 'Sentiment'},
-                                margin={'l': 80, 'b': 40, 't': 90, 'r': 40})
-                    },
-                    style={
-                        'width': '60%',
-                        'display': 'inline-block'
-                        }
-                    ))
-            ])
+        return social.social()
 
 if __name__ == '__main__':
 
