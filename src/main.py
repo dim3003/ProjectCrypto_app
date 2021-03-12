@@ -18,7 +18,7 @@ import include.tweet_stream as ts
 from collections import deque
 import dash_bootstrap_components as dbc
 
-from social import social
+import social
 
 logging.basicConfig(filename='infos.log',level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -35,7 +35,7 @@ df.dropna(inplace=True)
 app = dash.Dash(__name__,external_stylesheets=[dbc.themes.BOOTSTRAP])
 
 app.layout = html.Div([
-    html.H2("It is our app !!!",className="m-2",style={'text-align':'center'}),
+    html.H2("Crypto project",className="m-2",style={'text-align':'center'}),
      dcc.Dropdown(
         id='sentiment_term',
         options=[ #options des valeurs du dropdown
@@ -86,7 +86,7 @@ def render_content(tab):
     ############
 
     elif tab == 'tab-3':
-        return social()
+        return social.social()
 
 if __name__ == '__main__':
 

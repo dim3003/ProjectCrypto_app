@@ -16,6 +16,31 @@ import include.tweet_stream as ts
 from collections import deque
 import dash_bootstrap_components as dbc
 
+#Getting twitter data
+#####################
+conn = sqlite3.connect('./twitter.db')
+c = conn.cursor()
+
+df = pd.read_sql("SELECT * FROM sentiment WHERE tweet LIKE '%bitcoin%' ORDER BY unix DESC LIMIT 1000", conn)
+df.sort_values('unix', inplace=True) # Sort by unix time
+# Cuts data into 5 parts and does the mean of the last part:
+df['smoothed_sentiment'] = df['sentiment'].rolling(int(len(df)/5)).mean()
+df.dropna(inplace=True)
+
+#Create date index
+df['date'] = pd.to_datetime(df['unix'],unit='ms')
+
+df.index = df['date']
+df.set_index('date', inplace=True)
+
+
+#Assign X and Y for twitter sentiment
+X = df.index
+Y = df.smoothed_sentiment.values
+
+#Social function to be returned
+################################
+
 def social():
     return html.Div([
                 dcc.Graph(
@@ -23,8 +48,8 @@ def social():
                     figure={
                         'data': [
                             go.Scatter(
-                                x=[1,3,4],
-                                y=[3,6,12],
+                                x=X,
+                                y=Y,
                             )],
 
                             'layout': go.Layout(
