@@ -84,7 +84,7 @@ def generate_table(df, max_rows=10):
                               ),
                           html.Tbody(
                               [
-                                  
+
                               html.Tr(
                                   children=[
                                       html.Td(data) for data in d
@@ -106,8 +106,8 @@ def render_content(tab):
             html.H4('Explanation of our Project'),
             html.P('voici notre projet de advanced data analysis'),
             html.P('etudiants en master de finance')
-            
-           
+
+
         ])
     elif tab == 'tab-2':
         return html.Div([
@@ -162,6 +162,7 @@ def render_content(tab):
               [Input(component_id='sentiment_term', component_property='value'),
               Input(component_id='tabs-styled-with-props', component_property='value')],
               events=[State('graph-update', 'interval')])
+              
 def update_graph_scatter(sentiment_term,tab):
     if tab == 'tab-2':
         try:
@@ -172,7 +173,7 @@ def update_graph_scatter(sentiment_term,tab):
             df['sentiment_smoothed'] = df['sentiment'].rolling(int(len(df)/5)).mean()
 
             df['date'] = pd.to_datetime(df['unix'],unit='ms')
-            
+
             df.index = df['date']
             df.set_index('date', inplace=True)
 
@@ -182,9 +183,9 @@ def update_graph_scatter(sentiment_term,tab):
 
             df.dropna(inplace=True)
 
-            X = df.index 
+            X = df.index
             Y = df.sentiment_smoothed.values
-            
+
             columns=[{'name': i,'id': i} for i in df.columns]
 
             figstock = go.Figure()
@@ -203,10 +204,10 @@ def update_graph_scatter(sentiment_term,tab):
                                 style_cell={'textAlign': 'left',
                                 'width': '40%'}),className='col s12 m6 l6')
                 ]),
-                
+
             ]
             )
-            
+
 
             return child
         except Exception as e:
@@ -216,5 +217,5 @@ def update_graph_scatter(sentiment_term,tab):
 if __name__ == '__main__':
     # A voir beug pour scrap en continue les tweets
     Thread(target=ts.createStreamTwitter).start()
-    
+
     app.run_server(debug=True)

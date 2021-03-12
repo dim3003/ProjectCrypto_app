@@ -10,12 +10,15 @@ import dash_core_components as dcc
 import dash_table as dtable
 import plotly
 import logging
+import random
 from dash.dependencies import Output, State, Input
 import plotly.graph_objs as go
 
 import include.tweet_stream as ts
 from collections import deque
 import dash_bootstrap_components as dbc
+
+from social import social
 
 logging.basicConfig(filename='infos.log',level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -60,6 +63,7 @@ app.layout = html.Div([
 # app.callback => permet de faire changer les valeurs selon les actions de l'utilisateurs (https://dash.plotly.com/basic-callbacks)
 @app.callback(Output('tabs-content-props', 'children'),
               Input('tabs-styled-with-props', 'value'))
+
 def render_content(tab):
     if tab == 'tab-1':
         return html.Div([
@@ -76,11 +80,13 @@ def render_content(tab):
             html.Div(id='myChildren'),
             # Ajout de l'interval
         ])
-    elif tab == 'tab-3':
-        return html.Div([
-            html.H3('Tab content Social'),
-        ])
 
+    ############
+    #Social tab
+    ############
+
+    elif tab == 'tab-3':
+        return social()
 
 if __name__ == '__main__':
 
