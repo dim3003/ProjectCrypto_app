@@ -9,6 +9,7 @@ import dash_core_components as dcc
 import dash_table as dtable
 import plotly
 import logging
+import random
 from dash.dependencies import Output, State, Input
 import plotly.graph_objs as go
 
@@ -16,7 +17,12 @@ import include.tweet_stream as ts
 from collections import deque
 import dash_bootstrap_components as dbc
 
+
 logging.basicConfig(filename='infos.log',level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+
+#################
+# Database config
+#################
 
 conn = sqlite3.connect('./twitter.db')
 c = conn.cursor()
@@ -26,12 +32,23 @@ df.sort_values('unix',inplace=True)
 df['smoothed_sentiment'] = df['sentiment'].rolling(int(len(df)/5)).mean()
 df.dropna(inplace=True)
 
+# Index as date
+###############
 
-# permet de pouvoir utiliser booststrap => ça va faire BEAU !!!!
+df['date'] = pd.to_datetime(df['unix'],unit='ms')
+df.index = df['date']
+df.set_index('date', inplace=True)
+
+# App creation with BOOTSTRAP
+#############################
+
 app = dash.Dash(__name__,external_stylesheets=[dbc.themes.BOOTSTRAP])
 
+
 app.layout = html.Div([
-    html.H2("It is our app !!!",className="m-2",style={'text-align':'center'}),
+    html.H2("Crypto project",className="m-2",style={'text-align':'center'}),
+
+    #Dropdown to choose Crypto
      dcc.Dropdown(
         id='sentiment_term',
         options=[ #options des valeurs du dropdown
@@ -59,7 +76,12 @@ app.layout = html.Div([
 # app.callback => permet de faire changer les valeurs selon les actions de l'utilisateurs (https://dash.plotly.com/basic-callbacks)
 @app.callback(Output('tabs-content-props', 'children'),
               Input('tabs-styled-with-props', 'value'))
+
 def render_content(tab):
+
+    #Home tab
+    ############
+
     if tab == 'tab-1':
         return html.Div([
             html.H3('Tab content Home'),
@@ -69,17 +91,24 @@ def render_content(tab):
 
 
         ])
+
+    #Technicals tab
+    ############
+
     elif tab == 'tab-2':
         return html.Div([
             html.H3('Tab content Analysis'),
             html.Div(id='myChildren'),
             # Ajout de l'interval
         ])
-    elif tab == 'tab-3':
-        return html.Div([
-            html.H3('Tab content Social'),
-        ])
 
+    #Social tab
+    ############
+
+    elif tab == 'tab-3':
+        import social
+
+        return social.social()
 
 if __name__ == '__main__':
 
