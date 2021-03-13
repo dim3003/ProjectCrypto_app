@@ -42,12 +42,16 @@ MANIFEST
 pip-log.txt
 pip-delete-this-directory.txt
 
-#upgrade database
+### Database ###
+*.accdb
 *.db
-*Db.*
+*.dbf
+*.mdb
+*.pdb
+*.sqlite3
 
 #Pycharm "files"
-.idea/
+idea/
 
 # Unit test / coverage reports
 htmlcov/
