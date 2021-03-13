@@ -105,7 +105,7 @@ def render_content(tab):
             html.H3('Tab content 1'),
             html.H4('Explanation of our Project'),
             html.P('voici notre projet de advanced data analysis'),
-            html.P('etudiants en master de finance')
+            html.P('etudiants en master de Management')
 
 
         ])

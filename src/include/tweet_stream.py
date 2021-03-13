@@ -31,7 +31,7 @@ class Listener(StreamListener):
             time_ms = data['timestamp_ms'] # à changer pour avori directment les liens
             vs = analyser.polarity_scores(tweet)
             sentiment = vs['compound']
-            print(time_ms,tweet,sentiment)
+            #print(time_ms,tweet,sentiment)
             #insert data in SQL database
             #only english tweet
             if data['lang'] == 'en':

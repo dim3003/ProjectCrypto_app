@@ -27,6 +27,7 @@ https://github.com/Sentdex/socialsentiment
 - utiliser selenium + scrap html
 * augmenter la vitesse de loading
 * ML Model 
+* arreter flux de tweet
 -- data
 -- trouver les indicateurs
 -- cleaning data
