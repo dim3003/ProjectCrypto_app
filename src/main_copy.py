@@ -217,5 +217,4 @@ def update_graph_scatter(sentiment_term,tab):
 if __name__ == '__main__':
     # A voir beug pour scrap en continue les tweets
     Thread(target=ts.createStreamTwitter).start()
-
     app.run_server(debug=True)
