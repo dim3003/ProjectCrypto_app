@@ -20,7 +20,7 @@ import dash_bootstrap_components as dbc
 
 #################
 # Database config
-#################
+################
 
 conn = sqlite3.connect('./twitter.db')
 c = conn.cursor()

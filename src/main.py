@@ -17,6 +17,8 @@ import include.tweet_stream as ts
 from collections import deque
 import dash_bootstrap_components as dbc
 
+##### SECTION HOME ######
+
 
 logging.basicConfig(filename='infos.log',level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
