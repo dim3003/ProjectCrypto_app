@@ -2,6 +2,8 @@
 # Created by https://www.toptal.com/developers/gitignore/api/python
 # Edit at https://www.toptal.com/developers/gitignore?templates=python
 
+# file: ~/.gitignore_global
+
 ### Python ###
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -44,14 +46,14 @@ pip-delete-this-directory.txt
 
 ### Database ###
 *.accdb
-*.db
+src/include/twitter.db
 *.dbf
 *.mdb
 *.pdb
 *.sqlite3
 
 #Pycharm "files"
-idea/
+.idea
 
 # Unit test / coverage reports
 htmlcov/
