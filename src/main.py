@@ -17,8 +17,9 @@ import include.tweet_stream as ts
 from collections import deque
 import dash_bootstrap_components as dbc
 
-##### SECTION HOME ######
-
+########
+#HOME##
+#######
 
 logging.basicConfig(filename='infos.log',level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -86,10 +87,40 @@ def render_content(tab):
 
     if tab == 'tab-1':
         return html.Div([
-            html.H3('Tab content Home'),
-            #html.H4('Explanation of our Project'),
-            #html.P('voici notre projet de advanced data analysis'),
-            #html.P('etudiants en master de finance')
+            html.H3('Welcome to our interface !'),
+            html.H4('Explanation of our Project'),
+            html.P('As part of a free project done during our master in Data science for Fiannce at the University of Lausanne, '),
+            html.P('we decided to propose an interface for anyone interested in the field of crypto currencies.'),
+            html.P(120*'*'),
+            html.P('We want to offer you a tool to make investment decisions with all cryptocurrencies available on the wold main exchange : Binance.'),
+            html.P('Our interface is subdivided into two main parts which are the following:'),
+            html.H5('Technical tabs:'),
+            html.P('In this part, you will first find a filter in order to select the crypto currency of your choice. '),
+            html.P('You will then find the major indicators such as its price, the different volumes exchanged in the form of graphs, constantly updated to the second.'),
+            html.P('In addition, we allow you to have a clear and synthetic visualization of the following elements:'),
+            html.P('- Rank by market cap'),
+            html.P('- Market capitalization '),
+            html.P('- All time high'),
+            html.P('- Circulating supply'),
+            html.P('- Moving average'),
+            html.P('- MACD '),
+            html.P('- ADX'),
+            html.P('- RSI'),
+            html.P('- OBV'),
+            html.P('- RSI'),
+            html.P(120*'*'),
+            html.H5('Social Tab:'),
+            html.P('In this tab, we want to give our users the possibility to get an overview of all the latest Reddit and Tweeter posts referring to the selected cryptocurrency.'),
+            html.P('In addition, we have implemented a sentiment analysis algorithm, which classifies each publication according to its positive or negative impact on the price.'),
+            html.P('All of this is synthesized in a dynamic graph that is essential for any investment decision.'),
+            html.H4('Now it is time to ENJOY ! :D'),
+
+
+
+
+
+
+
 
 
         ])
