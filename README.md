@@ -8,7 +8,7 @@ git clone https://github.com/GuillaumePv/ProjetCrypto_app.git
 2) installer les librairies nécessaires pour le projet
 
 ```bash
-pip install requirements.txt
+pip install -r requirements.txt
 ```
 
 ## github for stream twitt project
