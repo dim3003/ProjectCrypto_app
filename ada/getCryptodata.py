@@ -22,6 +22,7 @@ def obtain_cryptodata(Cryptoname):
     candlestick_writer= csv.writer(csvfile, delimiter=',')
 
     # appel de Binance API pour avoir les données
+    # 1er arg: pair de crypto => pour le moment c'est crypto /USDT
     candlesticks = client.get_historical_klines(f"{Cryptoname}USDT", Client.KLINE_INTERVAL_1HOUR, start_date, end_date)
 
     for i in range(len(candlesticks)):
@@ -33,5 +34,5 @@ def obtain_cryptodata(Cryptoname):
     csvfile.close()
 
 if __name__ == '__main__':
-    name = str(input("Which crypto: "))
+    name = str(input("Which crypto: ")) #Ticker de la crypto
     obtain_cryptodata(name)
