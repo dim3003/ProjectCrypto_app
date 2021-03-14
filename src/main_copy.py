@@ -54,6 +54,11 @@ app.layout = html.Div([
         value='Bitcoin',
         className="mb-5"
     ),
+    dcc.Interval(
+            id='interval-component',
+            interval=1*5000, # in milliseconds
+            n_intervals=0
+        ),
     html.H2("", className="m-2"),
     # NavBar ##
     dcc.Tabs(id="tabs-styled-with-props", value='tab-1',children=[
@@ -160,10 +165,10 @@ def render_content(tab):
 # Ajouter le volume en dessous
 @app.callback(Output('myChildren', 'children'),
               [Input(component_id='sentiment_term', component_property='value'),
-              Input(component_id='tabs-styled-with-props', component_property='value')],
+              Input(component_id='tabs-styled-with-props', component_property='value'),
+              Input('interval-component', 'n_intervals')],
               events=[State('graph-update', 'interval')])
-
-def update_graph_scatter(sentiment_term,tab):
+def update_graph_scatter(sentiment_term,tab,n):
     if tab == 'tab-2':
         try:
             conn = sqlite3.connect('twitter.db')
