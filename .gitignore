@@ -3,6 +3,7 @@
 # Created by https://www.toptal.com/developers/gitignore/api/python,database,intellij
 # Edit at https://www.toptal.com/developers/gitignore?templates=python,database,intellij
 
+.DS_Store
 ### Database ###
 *.accdb
 *.db
