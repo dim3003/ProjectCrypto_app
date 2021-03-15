@@ -1,7 +1,0 @@
-consumer_key = '9AUzfAFmmSNrrgr5mGWmOs17t'
-consumer_secret = 'rslcoZPLSfIXF4jWr780rdCDHwsOS51rCfTIjjAoQSrpdORUAX'
-access_token = '1103197970248417280-FZZCrCkIlZcXIOYRNhQCoiHuvpytlc'
-access_token_secret = 'jD4JEDUt8E0ceq8L825KZktYS2PNw7JLDtltVf5x9JRui'
-
-api_key = "ILC9icWPA9oSbuh36a3JaYSWdB2DX2oZiV0M2lWSTDhZzWC4EcstY15Fu4kDaAY1"
-api_secret = "fAus00i3WoNZPbDlSbWpqNPLsxuSfn3FedHrx6VaOa3f0QJr17NIqIcOu4AcwIrd"
