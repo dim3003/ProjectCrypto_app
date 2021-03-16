@@ -2,7 +2,7 @@
 import  sqlite3
 import pandas as pd
 
-from threading import Thread
+import threading
 import dash
 import dash_html_components as html
 import dash_core_components as dcc
@@ -46,6 +46,12 @@ app = dash.Dash(__name__,external_stylesheets=[dbc.themes.BOOTSTRAP])
 
 
 app.layout = html.Div([
+    dcc.Interval(
+        id='social_interval',
+        disabled=False,
+        interval=3*1000,
+        n_intervals=0
+    ),
     html.H2("Crypto project",className="m-2",style={'text-align':'center'}),
 
     #Dropdown to choose Crypto
@@ -64,7 +70,7 @@ app.layout = html.Div([
     dcc.Tabs(id="tabs-styled-with-props", value='tab-1',children=[
         dcc.Tab(label='Home', value='tab-1'),
         dcc.Tab(label='Analysis', value='tab-2'),
-        dcc.Tab(label='Social', value='tab-3'),
+        dcc.Tab(label='Social', value='tab-3', children = html.Div([html.Div(id='dbLoader'), html.Div(id='social')])),
     ], colors={
         "border": "white",
         "primary": "gold",
@@ -73,7 +79,24 @@ app.layout = html.Div([
     html.Div(id='tabs-content-props')
 ])
 
-# app.callback => permet de faire changer les valeurs selon les actions de l'utilisateurs (https://dash.plotly.com/basic-callbacks)
+#Load social tab content
+########################
+@app.callback(Output('dbLoader', 'children'),
+              Input('dbLoader', 'id'))
+def loadDB(none):
+    ts.tweet_stream() #creates the twitter live stream
+
+
+import social
+@app.callback(Output('social', 'children'),
+              Input('social_interval', 'n_intervals'))
+def update_content(num):
+    content = social.social() #gets content from social.py
+    return content
+
+
+# Rendering Content
+#######################
 @app.callback(Output('tabs-content-props', 'children'),
               Input('tabs-styled-with-props', 'value'))
 
@@ -104,14 +127,12 @@ def render_content(tab):
 
     #Social tab
     ############
-
     elif tab == 'tab-3':
-        import social
+        pass
 
-        return social.social()
 
+
+#Run the app if it is main
 if __name__ == '__main__':
 
     app.run_server(debug=True)
-
-
