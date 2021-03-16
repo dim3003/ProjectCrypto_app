@@ -21,6 +21,7 @@ def tweet_stream():
 
     create_table()
 
+    c.execute("DELETE FROM sentiment")
 
     #Create a class to scrap stream of tweet
     class Listener(StreamListener):

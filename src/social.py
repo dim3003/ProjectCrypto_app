@@ -49,7 +49,7 @@ def social():
                                 )],
 
                                 'layout': go.Layout(
-                                    title='Twitter sentiment of Bitcoin',
+                                    title='Twitter live sentiment of Bitcoin',
                                     xaxis={'title': 'Time'},
                                     yaxis={'title': 'Sentiment'},
                                     margin={'l': 80, 'b': 40, 't': 90, 'r': 40})

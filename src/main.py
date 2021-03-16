@@ -49,7 +49,7 @@ app.layout = html.Div([
     dcc.Interval(
         id='social_interval',
         disabled=False,
-        interval=4*1000,
+        interval=3*1000,
         n_intervals=0
     ),
     html.H2("Crypto project",className="m-2",style={'text-align':'center'}),
@@ -70,7 +70,7 @@ app.layout = html.Div([
     dcc.Tabs(id="tabs-styled-with-props", value='tab-1',children=[
         dcc.Tab(label='Home', value='tab-1'),
         dcc.Tab(label='Analysis', value='tab-2'),
-        dcc.Tab(label='Social', value='tab-3', children = html.Div(id='social')),
+        dcc.Tab(label='Social', value='tab-3', children = html.Div([html.Div(id='dbLoader'), html.Div(id='social')])),
     ], colors={
         "border": "white",
         "primary": "gold",
@@ -79,17 +79,23 @@ app.layout = html.Div([
     html.Div(id='tabs-content-props')
 ])
 
-#Load social tab content with dccInterval
-#########################################
+#Load social tab content
+########################
+@app.callback(Output('dbLoader', 'children'),
+              Input('dbLoader', 'id'))
+def loadDB(none):
+    ts.tweet_stream() #creates the twitter live stream
+
+
 import social
 @app.callback(Output('social', 'children'),
               Input('social_interval', 'n_intervals'))
 def update_content(num):
-    #ts.tweet_stream()
-    content = social.social()
+    content = social.social() #gets content from social.py
     return content
 
-# Rendering the Content
+
+# Rendering Content
 #######################
 @app.callback(Output('tabs-content-props', 'children'),
               Input('tabs-styled-with-props', 'value'))
@@ -123,8 +129,6 @@ def render_content(tab):
     ############
     elif tab == 'tab-3':
         pass
-
-
 
 
 
