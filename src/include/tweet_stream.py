@@ -1,6 +1,6 @@
 # coding=utf-8
 def tweet_stream():
-    import config
+    import include.config
     from tweepy import Stream, OAuthHandler
     from tweepy.streaming import StreamListener
     import json
@@ -45,7 +45,9 @@ def tweet_stream():
         def on_data(self,data):
             try:
                 data = json.loads(data)
+                #print(data)
                 tweet = unidecode(data['text'])
+                #print(tweet)
                 time_ms = data['timestamp_ms'] # à changer pour avori directment les liens
                 vs = analyser.polarity_scores(tweet)
                 sentiment = vs['compound']
@@ -65,8 +67,8 @@ def tweet_stream():
     def createStreamTwitter():
         while True:
             try:
-                auth = OAuthHandler(config.consumer_key,config.consumer_secret)
-                auth.set_access_token(config.access_token, config.access_token_secret)
+                auth = OAuthHandler(include.config.consumer_key,include.config.consumer_secret)
+                auth.set_access_token(include.config.access_token, include.config.access_token_secret)
 
                 twitterStream = Stream(auth, Listener())
                 twitterStream.filter(track=["Bitcoin","Ethereum"])

@@ -17,16 +17,16 @@ def scrapCoin():
   for value in soup.find_all('tr')[3:]:
     row_value = []
     row = value.find_all('td')
-    row_value.append(row[0].text)
-    row_value.append(row[1].text)
-    row_value.append(row[2].text)
-    row_value.append(row[3].text)
-    row_value.append(row[4].text)
-    row_value.append(row[5].text)
-    row_value.append(row[6].text)
-    row_value.append(row[7].text)
-    row_value.append(row[8].text)
-    row_value.append(row[9].text)
+    row_value.append(row[0].text) #Ranks
+    row_value.append(row[1].text) #Name
+    row_value.append(row[2].text) #Symbol
+    row_value.append(row[3].text) #Market cap
+    row_value.append(row[4].text) #Price
+    row_value.append(row[5].text) #Circulating Supply
+    row_value.append(row[6].text) #Volume (24h)
+    row_value.append(row[7].text) #%1h
+    row_value.append(row[8].text) #%24h
+    row_value.append(row[9].text) #%7d
     table_value.append(row_value)
     #mettre dans un logo file :)
     print(f"=== Process {row[1].text} / Rank: {row[0].text}/ {len(soup.find_all('tr')[3:])} ===")

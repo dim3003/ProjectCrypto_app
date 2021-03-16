@@ -3,7 +3,6 @@
 def social():
     import  sqlite3
     import pandas as pd
-
     import threading
     import dash
     import dash_html_components as html
@@ -20,6 +19,7 @@ def social():
     import dash_bootstrap_components as dbc
 
     conn = sqlite3.connect('./include/twitter.db')
+
     df = pd.read_sql("SELECT * FROM sentiment WHERE tweet LIKE '%bitcoin%' ORDER BY unix DESC LIMIT 1000", conn)
     df.sort_values('unix',inplace=True)
     df['smoothed_sentiment'] = (df['sentiment'].rolling(int(len(df)/5)).mean() + 1) / 2
