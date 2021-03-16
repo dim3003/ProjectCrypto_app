@@ -19,23 +19,23 @@ def social():
     from collections import deque
     import dash_bootstrap_components as dbc
 
-    #################
-    # Database config
-    #################
     conn = sqlite3.connect('./include/twitter.db')
-    c = conn.cursor()
-
     df = pd.read_sql("SELECT * FROM sentiment WHERE tweet LIKE '%bitcoin%' ORDER BY unix DESC LIMIT 1000", conn)
     df.sort_values('unix',inplace=True)
-    df['smoothed_sentiment'] = df['sentiment'].rolling(int(len(df)/5)).mean()
+    df['smoothed_sentiment'] = (df['sentiment'].rolling(int(len(df)/5)).mean() + 1) / 2
     df.dropna(inplace=True)
 
     # Index as date
-    ###############
 
     df['date'] = pd.to_datetime(df['unix'],unit='ms')
     df.index = df['date']
     df.set_index('date', inplace=True)
+
+    #last sentiment_term
+    if len(df['smoothed_sentiment']) > 0:
+        lastSentiment = df['smoothed_sentiment'].iloc[-1]
+    else:
+        lastSentiment = 0
 
     content = html.Div([
                 html.Div(
@@ -54,7 +54,24 @@ def social():
                                     yaxis={'title': 'Sentiment'},
                                     margin={'l': 80, 'b': 40, 't': 90, 'r': 40})
                                }
-                        ))
+                        ), style={'width':'60%', 'display':'inline-block'}),
+                html.Div(
+                    dcc.Graph(
+                        id='twitterPie',
+                        figure={
+                            'data': [
+                                go.Pie(
+                                    labels = ['Positive', 'Negative'],
+                                    values = [lastSentiment, 1 - lastSentiment]
+                                    )
+                                ],
+
+                                'layout': go.Layout(
+                                    title='Twitter live sentiment of Bitcoin',
+                                    margin={'l': 80, 'b': 40, 't': 90, 'r': 40})
+                               }
+                        ), style={'width':'30%', 'display':'inline-block'})
+
                 ])
 
     return content
