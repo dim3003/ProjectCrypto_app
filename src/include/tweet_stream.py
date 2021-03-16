@@ -8,12 +8,18 @@ def tweet_stream():
     from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
     from unidecode import unidecode
     import time
+    import pandas as pd
 
     analyser = SentimentIntensityAnalyzer()
 
-    # connect to my database
-    conn = sqlite3.connect('./include/twitter.db',check_same_thread=False)
+    #################
+    # Database config
+    #################
+
+    conn = sqlite3.connect('./include/twitter.db')
     c = conn.cursor()
+
+    c.execute("DELETE FROM sentiment")
 
     def create_table():
         c.execute("CREATE TABLE IF NOT EXISTS sentiment(unix REAL, tweet TEXT, sentiment REAL)")
@@ -21,7 +27,18 @@ def tweet_stream():
 
     create_table()
 
-    c.execute("DELETE FROM sentiment")
+    df = pd.read_sql("SELECT * FROM sentiment WHERE tweet LIKE '%bitcoin%' ORDER BY unix DESC LIMIT 1000", conn)
+    df.sort_values('unix',inplace=True)
+    df['smoothed_sentiment'] = (df['sentiment'].rolling(int(len(df)/5)).mean() + 1) / 2
+    df.dropna(inplace=True)
+
+    # Index as date
+
+    df['date'] = pd.to_datetime(df['unix'],unit='ms')
+    df.index = df['date']
+    df.set_index('date', inplace=True)
+
+
 
     #Create a class to scrap stream of tweet
     class Listener(StreamListener):

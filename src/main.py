@@ -20,25 +20,6 @@ import dash_bootstrap_components as dbc
 
 logging.basicConfig(filename='infos.log',level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
-#################
-# Database config
-#################
-
-conn = sqlite3.connect('./twitter.db')
-c = conn.cursor()
-
-df = pd.read_sql("SELECT * FROM sentiment WHERE tweet LIKE '%bitcoin%' ORDER BY unix DESC LIMIT 1000", conn)
-df.sort_values('unix',inplace=True)
-df['smoothed_sentiment'] = df['sentiment'].rolling(int(len(df)/5)).mean()
-df.dropna(inplace=True)
-
-# Index as date
-###############
-
-df['date'] = pd.to_datetime(df['unix'],unit='ms')
-df.index = df['date']
-df.set_index('date', inplace=True)
-
 # App creation with BOOTSTRAP
 #############################
 
