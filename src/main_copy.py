@@ -199,7 +199,7 @@ def update_graph_scatter(sentiment_term,tab):
                 html.Div(className='row', children=[
                     html.Div(dtable.DataTable(
                                 id='tableMonthly',
-                                data=df.head(3).to_dict('records'), # number of tweets in datable
+                                data=df.head(40).to_dict('records'), # number of tweets in datable
                                 columns=columns,
                                 style_cell={'textAlign': 'left',
                                 'width': '40%'}),className='col s12 m6 l6')

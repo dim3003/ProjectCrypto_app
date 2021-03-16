@@ -107,7 +107,6 @@ def render_content(tab):
             html.P('- ADX'),
             html.P('- RSI'),
             html.P('- OBV'),
-            html.P('- RSI'),
             html.P(120*'*'),
             html.H5('Social Tab:'),
             html.P('In this tab, we want to give our users the possibility to get an overview of all the latest Reddit and Tweeter posts referring to the selected cryptocurrency.'),
