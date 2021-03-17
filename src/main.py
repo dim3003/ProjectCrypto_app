@@ -88,9 +88,10 @@ def update_content(num):
 
 import analysisTab
 @app.callback(Output('analysis', 'children'),
-              Input('social_interval', 'n_intervals'))
-def update_content_analysis_tab(num):
-    content = analysisTab.analysisPage() #gets content from social.py
+              [Input(component_id='sentiment_term', component_property='value'),
+              Input('social_interval', 'n_intervals')])
+def update_content_analysis_tab(sentiment_term,num):
+    content = analysisTab.analysisPage(df = coindf[coindf['Name'] == sentiment_term]) #gets content from social.py
     return content
 
 # Rendering Content

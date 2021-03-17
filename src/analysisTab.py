@@ -16,8 +16,9 @@ import include.binance_stream as bs
 
 import plotly.figure_factory as ff
 
-def analysisPage():
-
+def analysisPage(df=None):
+    #print(name)
+    name = df['Name'].values[0]
     df = bs.historicalData()
     content = html.Div([
         html.Div([html.Div(
@@ -31,7 +32,7 @@ def analysisPage():
                                 )],
 
                                 'layout': go.Layout(
-                                    title='Close price of bitcoin',
+                                    title=f'Close price of {name}',
                                     yaxis={'title': 'Price ($)'},
                                     margin={'l': 80, 'b': 40, 't': 90, 'r': 40})
                                }
@@ -66,7 +67,7 @@ def analysisPage():
                                 )],
 
                                 'layout': go.Layout(
-                                    title='Distribution of Bitcoin price (1min)',
+                                    title=f'Distribution of {name} price (1min)',
                                     xaxis={'title': 'Time'},
                                     yaxis={'title': 'Price ($)'},
                                     height= 300,
@@ -83,85 +84,14 @@ def analysisPage():
                                 )],
 
                                 'layout': go.Layout(
-                                    title='Distribution of Bitcoin price (1min)',
+                                    title=f'Distribution of {name} price (1min)',
                                     xaxis={'title': 'Time'},
                                     yaxis={'title': 'Price ($)'},
                                     height= 300,
                                     margin={'l': 80, 'b': 40, 't': 90, 'r': 40})
                                }
                         ), style={'width':'100%', 'height':'10%', 'display':'block'})
-                        ],html.Div([html.Div(
-                    dcc.Graph(
-                        id='twitter',
-                        figure={
-                            'data': [
-                                go.Scatter(
-                                    x=df.index,
-                                    y=df['Close'],
-                                )],
-
-                                'layout': go.Layout(
-                                    title='Close price of bitcoin',
-                                    yaxis={'title': 'Price ($)'},
-                                    margin={'l': 80, 'b': 40, 't': 90, 'r': 40})
-                               }
-                        ), style={'width':'100%', 'display':'block'}),
-                html.Div(
-                    dcc.Graph(
-                        id='twitterPie',
-                        figure={
-                            'data': [
-                                go.Bar(
-                                    x=df.index,
-                                    y=df['NumberofTrade']
-                                )],
-
-                                'layout': go.Layout(
-                                    height= 200,
-                                     xaxis={'title': 'Time'},
-                                    yaxis={'title': 'Number of trade'},
-                                    margin={'l': 80, 'b': 40, 't': 10, 'r': 40})
-                               }
-                        ), style={'width':'100%', 'height':'10%', 'display':'block'})
-                        ],style={'width':'60%', 'display':'inline-block'}),
-                html.Div([html.Div(
-                    dcc.Graph(
-                        id='twitterPie',
-                        figure={
-                            'data': [
-                                go.Box(
-                                    x=df['Close'].pct_change().dropna(),
-                                    showlegend=False,
-                                    notched=True
-                                )],
-
-                                'layout': go.Layout(
-                                    title='Distribution of Bitcoin price (1min)',
-                                    xaxis={'title': 'Time'},
-                                    yaxis={'title': 'Price ($)'},
-                                    height= 300,
-                                    margin={'l': 80, 'b': 40, 't': 90, 'r': 40})
-                               }
-                        ), style={'width':'100%', 'height':'10%', 'display':'block'}),
-                html.Div(
-                    dcc.Graph(
-                        id='twitterPie',
-                        figure={
-                            'data': [
-                                go.Histogram(
-                                    x=df['Close'].pct_change().dropna(),
-                                )],
-
-                                'layout': go.Layout(
-                                    title='Distribution of Bitcoin price (1min)',
-                                    xaxis={'title': 'Time'},
-                                    yaxis={'title': 'Price ($)'},
-                                    height= 300,
-                                    margin={'l': 80, 'b': 40, 't': 90, 'r': 40})
-                               }
-                        ), style={'width':'100%', 'height':'10%', 'display':'block'})
-                        ],style={'width':'30%', 'display':'inline-block'})),
-            html.Div([html.H1("test")])
+                        ],style={'width':'30%', 'display':'inline-block'}),
 
                 ])
     
