@@ -19,6 +19,13 @@ def social():
     import dash_bootstrap_components as dbc
 
     conn = sqlite3.connect('./include/twitter.db')
+    c = conn.cursor()
+
+    def create_table():
+        c.execute("CREATE TABLE IF NOT EXISTS sentiment(unix REAL, tweet TEXT, sentiment REAL)")
+        conn.commit()
+
+    create_table()
 
     df = pd.read_sql("SELECT * FROM sentiment WHERE tweet LIKE '%bitcoin%' ORDER BY unix DESC LIMIT 1000", conn)
     df.sort_values('unix',inplace=True)
