@@ -1,17 +1,17 @@
-# créer une table pour binance close
 
 #import tweet_stream
 from binance.websockets import BinanceSocketManager
 from binance.client import Client
-import config
+import include.config
 import websocket, json, pprint
 from datetime import datetime
-
+import pandas as pd
 # lien pour ce connecter au server de binance pour avoir en temps réel les données
 SOCKET = "wss://stream.binance.com:9443/ws/btcusdt@kline_1m"
 
-client = Client(config.api_key, config.api_secret, tld='us')
+client = Client(include.config.api_key, include.config.api_secret, tld='us')
 bm = BinanceSocketManager(client)
+
 
 def on_open(ws):
     print('opened connection')
@@ -52,6 +52,22 @@ def on_message(ws, message):
 
     
 
-                
-ws = websocket.WebSocketApp(SOCKET, on_open=on_open, on_close=on_close, on_message=on_message)
-ws.run_forever()
+def livedata():        
+    ws = websocket.WebSocketApp(SOCKET, on_open=on_open, on_close=on_close, on_message=on_message)
+    ws.run_forever()
+
+def historicalData():
+    # fetch 1 minute klines for the last day up until now
+    klines = client.get_historical_klines("BTCUSD", Client.KLINE_INTERVAL_1MINUTE, "3 day ago UTC") # timing à choisir soit en direct avec un websocket soit un appel API
+    columns = ['Date','Open','Close','High','Low','Volume','CloseTime','QuoteAssetVolume','NumberofTrade','TakerbuybaseV','TakerbuyquoteV','Ignore']
+    df = pd.DataFrame(klines,columns=columns)
+    df['Date'] = pd.to_datetime(df['Date']/1000,unit='s')
+    df.index = df['Date']
+    df = df.iloc[:,1:]
+    df['Close'] = df['Close'].astype(float)
+    df['NumberofTrade'] = df['NumberofTrade'].astype(int)
+    return df
+
+if __name__ == "__main__":
+    df = historicalData()
+    #print(df['Close'])
