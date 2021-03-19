@@ -51,7 +51,11 @@ app.layout = html.Div([
     dcc.Tabs(id="tabs-styled-with-props", value='tab-1',children=[
         dcc.Tab(label='Home', value='tab-1'),
         dcc.Tab(label='Analysis', value='tab-2'),
-        dcc.Tab(label='Social', value='tab-3', children = html.Div([html.Div(id='dbLoader'), html.Div(id='social')])),
+        dcc.Tab(label='Social', value='tab-3', children = html.Div([html.Div(id='dbLoader'),
+                                                                    html.Div(id='social', children = [
+                                                                        html.Div(id='initSocial', children= html.Div(id='verifiedChoice', children='allTweet')),
+                                                                        html.Div(id='initGraph')])
+                                                                    ]))
     ], colors={
         "border": "white",
         "primary": "gold",
@@ -67,12 +71,19 @@ app.layout = html.Div([
 def loadDB(none):
     ts.tweet_stream() #creates the twitter live stream
 
-
 import social
-@app.callback(Output('social', 'children'),
+
+#Create a header with choices
+@app.callback(Output('initSocial', 'children'),
+              Input('initSocial', 'id'))
+def loadHeader(num):
+    return social.socialInit()
+
+#gets graph content from social.py
+@app.callback(Output('initGraph', 'children'),
               Input('social_interval', 'n_intervals'))
 def update_content(num):
-    content = social.social() #gets content from social.py
+    content = social.socialGraph()
     return content
 
 

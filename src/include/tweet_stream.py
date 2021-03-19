@@ -47,16 +47,16 @@ def tweet_stream():
         def on_data(self,data):
             try:
                 data = json.loads(data)
-                #print(data)
                 tweet = unidecode(data['text'])
-                #print(tweet)
-                time_ms = data['timestamp_ms'] # à changer pour avori directment les liens
+
+                time_ms = data['timestamp_ms'] # à changer pour avoir directment les liens
                 vs = analyser.polarity_scores(tweet)
                 sentiment = vs['compound']
                 #print(time_ms,tweet,sentiment)
                 #insert data in SQL database
+
                 #only english tweet
-                if data['lang'] == 'en':
+                if data['lang'] == 'en': #and data['verified'] == True: #and data['retweet_count'] > 0
                     c.execute("INSERT INTO sentiment (unix, tweet, sentiment) VALUES (?, ?, ?)",(time_ms, tweet, sentiment))
                 conn.commit()
             except  KeyError as e:

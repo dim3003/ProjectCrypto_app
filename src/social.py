@@ -1,6 +1,23 @@
 # coding=utf-8
 
-def social():
+def socialInit():
+    import dash_html_components as html
+    import dash_core_components as dcc
+    headerBlock = html.Div(
+                    dcc.RadioItems(
+                        id='verifiedChoice',
+                        options=[
+                            {'label': 'All tweets', 'value': 'allTweet'},
+                            {'label': 'Verified', 'value': 'verifTweet'}
+                        ],
+                        value = 'allTweet',
+                        labelStyle={'display': 'inline-block'}
+                    ))
+    return headerBlock
+
+def socialGraph():
+    #Import all packages
+    ###############
     import  sqlite3
     import pandas as pd
     import threading
@@ -17,6 +34,9 @@ def social():
     import include.tweet_stream as ts
     from collections import deque
     import dash_bootstrap_components as dbc
+
+    #Db update_content
+    ##################
 
     conn = sqlite3.connect('./include/twitter.db')
     c = conn.cursor()
@@ -39,10 +59,14 @@ def social():
     df.set_index('date', inplace=True)
 
     #last sentiment_term
+
     if len(df['smoothed_sentiment']) > 0:
         lastSentiment = df['smoothed_sentiment'].iloc[-1]
     else:
         lastSentiment = 0
+
+    #Update Content
+    ###############
 
     content = html.Div([
                 html.Div(
