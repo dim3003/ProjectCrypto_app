@@ -62,7 +62,29 @@ app.layout = html.Div([
     dcc.Tabs(id="tabs-styled-with-props", value='tab-1',children=[
         dcc.Tab(label='Home', value='tab-1'),
         dcc.Tab(label='Analysis', value='tab-2', children = html.Div([html.Div(id='analysis')])),
-        dcc.Tab(label='Social', value='tab-3', children = html.Div([html.Div(id='dbLoader'), html.Div(id='social')])),
+        dcc.Tab(label='Social',
+                value='tab-3',
+                children = html.Div([html.Div(id='dbLoader'),
+                                    html.Div(id='social', children = [
+                                        html.Div(id='initSocial',
+                                                 children = dcc.RadioItems(
+                                                        id='verifiedChoice',
+                                                        value = 'allTweet')),
+                                        html.Div(id='initGraph'), #graphs block
+                                        html.Div([ #dropdown block
+                                            dcc.Dropdown(
+                                                id='tweetDropdown',
+                                                options=[
+                                                    {'label': 'Most recent tweets', 'value': 'mrtweet'},
+                                                    {'label': 'Most positive tweets (last 24h)', 'value': 'mptweet'},
+                                                    {'label': 'Most negative tweets (last 24h)', 'value': 'mntweet'}
+                                                        ],
+                                                value='mrtweet'
+                                                    ),
+                                            html.Div(id='tweetsList')])
+                                    ]) #close id social div children
+                        ])) #close dcc.Tab social + Tabs + Dropdown
+
     ], colors={
         "border": "white",
         "primary": "gold",
@@ -74,17 +96,25 @@ app.layout = html.Div([
 #Load social tab content
 ########################
 @app.callback(Output('dbLoader', 'children'),
-              Input('dbLoader', 'id'))
-def loadDB(none):
-    ts.tweet_stream() #creates the twitter live stream
-
+              Input('verifiedChoice', 'value'))
+def loadDB(verif):
+    ts.tweet_stream(verif) #creates the twitter live stream
 
 import social
-@app.callback(Output('social', 'children'),
+
+#Create a header with choices
+@app.callback(Output('initSocial', 'children'),
+              Input('sentiment_term', 'value'))
+def loadHeader(crypto):
+    return social.socialHeader(crypto)
+
+#create graph content from social.py
+@app.callback(Output('initGraph', 'children'),
               Input('social_interval', 'n_intervals'))
 def update_content(num):
-    content = social.social() #gets content from social.py
+    content = social.socialGraph()
     return content
+
 
 import analysisTab
 @app.callback(Output('analysis', 'children'),
@@ -93,6 +123,13 @@ import analysisTab
 def update_content_analysis_tab(sentiment_term,num):
     content = analysisTab.analysisPage(df = coindf[coindf['Name'] == sentiment_term]) #gets content from social.py
     return content
+  
+#Tweet dropdown
+@app.callback(Output('tweetsList', 'children'),
+              Input('tweetDropdown', 'value'))
+def loadList(typeChoice):
+    return social.socialDrop(typeChoice)
+
 
 # Rendering Content
 #######################
