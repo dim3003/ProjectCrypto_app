@@ -1,3 +1,6 @@
+## Presentation of project
+https://github.com/Sentdex/socialsentiment
+
 ## Install project and librairies
 
 1) cloner le projet sur son ordinateur
@@ -11,16 +14,10 @@ git clone https://github.com/GuillaumePv/ProjetCrypto_app.git
 pip install -r requirements.txt
 ```
 
-## github for stream twitt project
-https://github.com/Sentdex/socialsentiment
-
 
 ## TO-DO
-* faire database ticker crypto
-* faire des div row pour placer les dashboard
-* corriger le beug du début
-* faire un scrapper de coinmarketcap
 * augmenter la vitesse de loading
+* ajouter des stats dexcriptives au projet
 * ML Model 
 * arreter flux de tweet
 -- data
@@ -28,3 +25,7 @@ https://github.com/Sentdex/socialsentiment
 -- cleaning data
 -- tester les différents algos sur bitcoin
 -- tester sur les autres cryptos
+
+## Code
+
+### Possiblle extension
