@@ -1,5 +1,5 @@
 # coding=utf-8
-def tweet_stream():
+def tweet_stream(verif):
     import include.config
     from tweepy import Stream, OAuthHandler
     from tweepy.streaming import StreamListener
@@ -31,7 +31,11 @@ def tweet_stream():
 
     df = pd.read_sql("SELECT * FROM sentiment WHERE tweet LIKE '%bitcoin%' ORDER BY unix DESC LIMIT 1000", conn)
     df.sort_values('unix',inplace=True)
-    df['smoothed_sentiment'] = (df['sentiment'].rolling(int(len(df)/5)).mean() + 1) / 2
+
+    if len(df) < 100: #takes all the db if its less than 100 to do the rolling mean otherwise takes half only
+        df['smoothed_sentiment'] = (df['sentiment'].rolling(int(len(df))).mean() + 1) / 2
+    else:
+        df['smoothed_sentiment'] = (df['sentiment'].rolling(100).mean() + 1) / 2
     df.dropna(inplace=True)
 
     # Index as date
@@ -45,20 +49,29 @@ def tweet_stream():
     #Create a class to scrap stream of tweet
     class Listener(StreamListener):
         def on_data(self,data):
+            recall = None
             try:
+                if verif != recall and recall != None:
+                    c.execute("DELETE FROM sentiment")
+
                 data = json.loads(data)
-                #print(data)
                 tweet = unidecode(data['text'])
-                #print(tweet)
-                time_ms = data['timestamp_ms'] # à changer pour avori directment les liens
+
+                time_ms = data['timestamp_ms'] # à changer pour avoir directment les liens
                 vs = analyser.polarity_scores(tweet)
                 sentiment = vs['compound']
                 #print(time_ms,tweet,sentiment)
                 #insert data in SQL database
-                #only english tweet
-                if data['lang'] == 'en':
-                    c.execute("INSERT INTO sentiment (unix, tweet, sentiment) VALUES (?, ?, ?)",(time_ms, tweet, sentiment))
+                if verif == 'Verified':
+                    #only english and verified user data
+                    if data['lang'] == 'en' and data['verified'] == True: #and data['retweet_count'] > 0
+                        c.execute("INSERT INTO sentiment (unix, tweet, sentiment) VALUES (?, ?, ?)",(time_ms, tweet, sentiment))
+                else:
+                    #only english
+                    if data['lang'] == 'en': #and data['verified'] == True: #and data['retweet_count'] > 0
+                        c.execute("INSERT INTO sentiment (unix, tweet, sentiment) VALUES (?, ?, ?)",(time_ms, tweet, sentiment))
                 conn.commit()
+                recall = verif
             except  KeyError as e:
                 print(str(e))
             return True
@@ -73,7 +86,7 @@ def tweet_stream():
                 auth.set_access_token(include.config.access_token, include.config.access_token_secret)
 
                 twitterStream = Stream(auth, Listener())
-                twitterStream.filter(track=["Bitcoin","Ethereum"])
+                twitterStream.filter(track=["Bitcoin"])
             except Exception as e:
                 print(str(e))
                 time.sleep(5)
