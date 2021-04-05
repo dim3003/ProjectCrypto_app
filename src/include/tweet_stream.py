@@ -20,13 +20,13 @@ def tweet_stream(verif):
     c = conn.cursor()
 
     def create_table():
-        c.execute("CREATE TABLE IF NOT EXISTS sentiment(unix REAL, tweet TEXT, sentiment REAL)")
+        c.execute("CREATE TABLE IF NOT EXISTS sentiment(unix REAL, tweet TEXT, sentiment REAL, verified BOOLEAN)")
         conn.commit()
 
     create_table()
 
     c.execute("DELETE FROM sentiment")
-
+    conn.commit()
 
 
     df = pd.read_sql("SELECT * FROM sentiment WHERE tweet LIKE '%bitcoin%' ORDER BY unix DESC LIMIT 1000", conn)
@@ -49,10 +49,12 @@ def tweet_stream(verif):
     #Create a class to scrap stream of tweet
     class Listener(StreamListener):
         def on_data(self,data):
-            recall = None
             try:
-                if verif != recall and recall != None:
+                print(verif)
+                if verif == 398120:
+                    print('delete db from change of verif')
                     c.execute("DELETE FROM sentiment")
+                    conn.commit()
 
                 data = json.loads(data)
                 tweet = unidecode(data['text'])
@@ -60,18 +62,15 @@ def tweet_stream(verif):
                 time_ms = data['timestamp_ms'] # à changer pour avoir directment les liens
                 vs = analyser.polarity_scores(tweet)
                 sentiment = vs['compound']
-                #print(time_ms,tweet,sentiment)
+                verified = data['user']['verified']
+                #print(time_ms,tweet,sentiment, verified)
+
                 #insert data in SQL database
-                if verif == 'Verified':
-                    #only english and verified user data
-                    if data['lang'] == 'en' and data['verified'] == True: #and data['retweet_count'] > 0
-                        c.execute("INSERT INTO sentiment (unix, tweet, sentiment) VALUES (?, ?, ?)",(time_ms, tweet, sentiment))
-                else:
-                    #only english
-                    if data['lang'] == 'en': #and data['verified'] == True: #and data['retweet_count'] > 0
-                        c.execute("INSERT INTO sentiment (unix, tweet, sentiment) VALUES (?, ?, ?)",(time_ms, tweet, sentiment))
-                conn.commit()
-                recall = verif
+                if data['lang'] == 'en': #and data['retweet_count'] > 0
+                    c.execute("INSERT INTO sentiment (unix, tweet, sentiment, verified) VALUES (?, ?, ?, ?)",(time_ms, tweet, sentiment, verified))
+                    conn.commit()
+
+
             except  KeyError as e:
                 print(str(e))
             return True

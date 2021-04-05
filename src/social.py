@@ -27,7 +27,7 @@ def socialInit():
     c = conn.cursor()
 
     def create_table():
-        c.execute("CREATE TABLE IF NOT EXISTS sentiment(unix REAL, tweet TEXT, sentiment REAL)")
+        c.execute("CREATE TABLE IF NOT EXISTS sentiment(unix REAL, tweet TEXT, sentiment REAL, verified BOOLEAN)")
         conn.commit()
 
     create_table()

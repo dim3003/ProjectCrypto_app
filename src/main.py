@@ -115,7 +115,15 @@ def update_content(num):
     content = social.socialGraph()
     return content
 
+#Tweet dropdown
+@app.callback(Output('tweetsList', 'children'),
+              Input('tweetDropdown', 'value'))
+def loadList(typeChoice):
+    return social.socialDrop(typeChoice)
 
+
+#Load analysis tab content
+########################
 import analysisTab
 @app.callback(Output('analysis', 'children'),
               [Input(component_id='sentiment_term', component_property='value'),
@@ -123,12 +131,8 @@ import analysisTab
 def update_content_analysis_tab(sentiment_term,num):
     content = analysisTab.analysisPage(df = coindf[coindf['Name'] == sentiment_term]) #gets content from social.py
     return content
-  
-#Tweet dropdown
-@app.callback(Output('tweetsList', 'children'),
-              Input('tweetDropdown', 'value'))
-def loadList(typeChoice):
-    return social.socialDrop(typeChoice)
+
+
 
 
 # Rendering Content
