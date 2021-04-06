@@ -19,6 +19,11 @@ import dash_bootstrap_components as dbc
 
 import include.webscrapper as webs
 
+#Drop the db if already existing one in the app
+conn = sqlite3.connect('./include/twitter.db')
+c = conn.cursor()
+c.execute("DROP TABLE IF EXISTS sentiment")
+
 
 logging.basicConfig(filename='infos.log',level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -75,9 +80,9 @@ app.layout = html.Div([
                                             dcc.Dropdown(
                                                 id='tweetDropdown',
                                                 options=[
-                                                    {'label': 'Most recent tweets', 'value': 'mrtweet'},
-                                                    {'label': 'Most positive tweets (last 24h)', 'value': 'mptweet'},
-                                                    {'label': 'Most negative tweets (last 24h)', 'value': 'mntweet'}
+                                                    {'label': 'Most recent tweets', 'value': 'mrtweet'}
+                                                    #{'label': 'Most positive tweets (last 24h)', 'value': 'mptweet'}, # TO BE ADDED LATER WITH FULL DB
+                                                    #{'label': 'Most negative tweets (last 24h)', 'value': 'mntweet'}
                                                         ],
                                                 value='mrtweet'
                                                     ),
@@ -96,9 +101,9 @@ app.layout = html.Div([
 #Load social tab content
 ########################
 @app.callback(Output('dbLoader', 'children'),
-              Input('verifiedChoice', 'value'))
-def loadDB(verif):
-    ts.tweet_stream(verif) #creates the twitter live stream
+              Input('dbLoader', 'children'))
+def loadDB(num):
+    ts.tweet_stream() #creates the twitter live stream
 
 import social
 
@@ -110,16 +115,18 @@ def loadHeader(crypto):
 
 #create graph content from social.py
 @app.callback(Output('initGraph', 'children'),
-              Input('social_interval', 'n_intervals'))
-def update_content(num):
-    content = social.socialGraph()
+              [Input('verifiedChoice', 'value'),
+               Input('social_interval', 'n_intervals')])
+def update_content(verified, num):
+    content = social.socialGraph(verified)
     return content
 
 #Tweet dropdown
 @app.callback(Output('tweetsList', 'children'),
-              Input('tweetDropdown', 'value'))
-def loadList(typeChoice):
-    return social.socialDrop(typeChoice)
+             [Input('verifiedChoice', 'value'),
+              Input('tweetDropdown', 'value')])
+def loadList(verified, typeChoice):
+    return social.socialDrop(verified, typeChoice)
 
 
 #Load analysis tab content

@@ -35,21 +35,19 @@ def socialInit():
     global df
     df = pd.read_sql("SELECT * FROM sentiment WHERE tweet LIKE '%bitcoin%' ORDER BY unix DESC LIMIT 1000", conn)
     df.sort_values('unix',inplace=True)
-    df['smoothed_sentiment'] = (df['sentiment'].rolling(int(len(df)/5)).mean() + 1) / 2
-    df.dropna(inplace=True)
 
-    # Index as date
-
-    df['date'] = pd.to_datetime(df['unix'],unit='ms')
-    df.index = df['date']
-    df.set_index('date', inplace=True)
-
-    #last sentiment_term
-    global lastSentiment
-    if len(df['smoothed_sentiment']) > 0:
-        lastSentiment = df['smoothed_sentiment'].iloc[-1]
+    #smoothed sentiment value
+    if len(df) < 5:
+        df['smoothed_sentiment'] = df['sentiment']
+    elif 5 < len(df) < 100: #takes all the db if its less than 100 to do the rolling mean otherwise takes half only
+        df['smoothed_sentiment'] = (df['sentiment'].rolling(5).mean() + 1) / 2
     else:
-        lastSentiment = 0
+        df['smoothed_sentiment'] = (df['sentiment'].rolling(100).mean() + 1) / 2
+
+    # date column
+    df['date'] = pd.to_datetime(df['unix'],unit='ms')
+
+    return df
 
 
 def socialHeader(crypto):
@@ -68,17 +66,29 @@ def socialHeader(crypto):
                     style={'margin':'1em 1em 0 1em'})
     return headerBlock
 
-def socialGraph():
+def socialGraph(verified):
 
-    socialInit() #gets the data
+    df = socialInit() #gets the data
 
     #Update Content
     ###############
+
+    #filters the database if verified only is selected
+    if verified == 'verifTweet':
+        df = df[df.verified == True]
+
+    #last sentiment_term
+    lastSentiment = 0
+
+    if len(df['smoothed_sentiment']) > 0:
+        lastSentiment = df['smoothed_sentiment'].iloc[-1]
+
+
     content = html.Div([
                 html.Div(
                     dcc.Graph(
                         id='twitter',
-                        figure={
+                        figure={ #Live graph figure line
                             'data': [
                                 go.Scatter(
                                     x=df.index,
@@ -96,7 +106,7 @@ def socialGraph():
                 html.Div(
                     dcc.Graph(
                         id='twitterPie',
-                        figure={
+                        figure={ #pie chart
                             'data': [
                                 go.Pie(
                                     marker = dict(colors=['1cbf1f', 'c1281f']),
@@ -113,12 +123,31 @@ def socialGraph():
     return content
 
 
-def socialDrop(typeChoice):
-    socialInit()
+def socialDrop(verified, typeChoice):
+    df = socialInit()
     while len(df) <= 10:
-        socialInit() #gets the data
+        df = socialInit() #gets the data
 
-    last = df.iloc[-10:, 1] #last 10 tweets from the db
+
+    if verified == 'verifTweet':
+        df = df[df.verified == True]
+
+
+    #last 10 tweets from the db
+    if len(df.iloc[:, 1]) < 10:
+        last = df.iloc[:, 1]
+    else:
+        last = df.iloc[-10:, 1]
+
+    #check if unique tweets
+
+    ## compare all tweets & count number of double
+
+    ## assert last to -(10 + number of double)
+
+    ## remove  doubles from list with mode or smth
+
+    #create the content
     innerContent=[]
     for i in last:
         innerContent.append(html.Div(str(i)),)
