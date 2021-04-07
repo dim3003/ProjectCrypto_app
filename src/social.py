@@ -12,6 +12,7 @@ import dash_table as dtable
 import plotly
 import logging
 import random
+import numpy as np
 from dash.dependencies import Output, State, Input
 import plotly.graph_objs as go
 
@@ -19,7 +20,7 @@ import include.tweet_stream as ts
 from collections import deque
 import dash_bootstrap_components as dbc
 
-def socialInit():
+def socialInit(verified):
 
     #Db update_content
     ##################
@@ -27,29 +28,32 @@ def socialInit():
     c = conn.cursor()
 
     def create_table():
-        c.execute("CREATE TABLE IF NOT EXISTS sentiment(unix REAL, tweet TEXT, sentiment REAL)")
+        c.execute("CREATE TABLE IF NOT EXISTS sentiment(unix REAL, tweet TEXT, sentiment REAL, verified BOOLEAN)")
         conn.commit()
 
     create_table()
 
     global df
-    df = pd.read_sql("SELECT * FROM sentiment WHERE tweet LIKE '%bitcoin%' ORDER BY unix DESC LIMIT 1000", conn)
-    df.sort_values('unix',inplace=True)
-    df['smoothed_sentiment'] = (df['sentiment'].rolling(int(len(df)/5)).mean() + 1) / 2
-    df.dropna(inplace=True)
+    df = pd.read_sql("SELECT * FROM sentiment ORDER BY unix DESC LIMIT 1000", conn)
 
-    # Index as date
+    #filters the database if verified only is selected
+    if verified == 'verifTweet':
+        df = df[df.verified == True]
 
-    df['date'] = pd.to_datetime(df['unix'],unit='ms')
-    df.index = df['date']
-    df.set_index('date', inplace=True)
-
-    #last sentiment_term
-    global lastSentiment
-    if len(df['smoothed_sentiment']) > 0:
-        lastSentiment = df['smoothed_sentiment'].iloc[-1]
+    #smoothed sentiment value
+    if len(df) < 5:
+        df['smoothed_sentiment'] = (df['sentiment'] + 1) / 2
+    elif 5 < len(df) < 100: #takes all the db if its less than 100 to do the rolling mean otherwise takes half only
+        df['smoothed_sentiment'] = (df['sentiment'].rolling(5).mean() + 1) / 2
     else:
-        lastSentiment = 0
+        df['smoothed_sentiment'] = (df['sentiment'].rolling(100).mean() + 1) / 2
+
+    # date column
+    df['date'] = pd.to_datetime(df['unix'],unit='ms')
+    if 'date' in df.columns:
+        df.sort_values('date', inplace=True)
+
+    return df
 
 
 def socialHeader(crypto):
@@ -68,21 +72,34 @@ def socialHeader(crypto):
                     style={'margin':'1em 1em 0 1em'})
     return headerBlock
 
-def socialGraph():
+def socialGraph(verified):
 
-    socialInit() #gets the data
+    df = socialInit(verified) #gets the data
 
     #Update Content
     ###############
+
+
+
+    #last sentiment_term
+    lastSentiment = 0
+
+    if  5 >= len(df) >= 1:
+        lastSentiment = df['smoothed_sentiment'].iloc[0] #if smoothed sentiment is on 1 last
+    elif 5 < len(df) < 100:
+        lastSentiment = df['smoothed_sentiment'].iloc[-5] #if smoothed sentiment is on 5 last
+    elif 100 <= len(df):
+        lastSentiment = df['smoothed_sentiment'].iloc[-100] #if smoothed sentiment is on 100 last$
+
     content = html.Div([
                 html.Div(
                     dcc.Graph(
                         id='twitter',
-                        figure={
+                        figure={ #Live graph figure line
                             'data': [
                                 go.Scatter(
-                                    x=df.index,
-                                    y=df['smoothed_sentiment']
+                                    x=df['date'],
+                                    y=df['smoothed_sentiment'].dropna() #takes only smoothed sentiment with values
                                 )],
 
                                 'layout': go.Layout(
@@ -96,7 +113,7 @@ def socialGraph():
                 html.Div(
                     dcc.Graph(
                         id='twitterPie',
-                        figure={
+                        figure={ #pie chart
                             'data': [
                                 go.Pie(
                                     marker = dict(colors=['1cbf1f', 'c1281f']),
@@ -113,16 +130,28 @@ def socialGraph():
     return content
 
 
-def socialDrop(typeChoice):
-    socialInit()
-    while len(df) <= 10:
-        socialInit() #gets the data
+def socialDrop(verified, typeChoice):
+    df = socialInit(verified)
 
-    last = df.iloc[-10:, 1] #last 10 tweets from the db
-    innerContent=[]
-    for i in last:
-        innerContent.append(html.Div(str(i)),)
-        innerContent.append(html.Br(),)
-    content=html.Div(innerContent, style={'padding':'2em'})
+    #last 10 tweets from the db
+    if len(df.iloc[:, 1]) < 15:
+        last = df.iloc[:, 1]
+    else:
+        last = df.iloc[-10:, 1]
+        #check if unique tweets
+        i = 1
+        while len(pd.unique(last)) < 10:
+            last = pd.unique(df.iloc[-(10 + i):, 1])
+            i+=1
+
+    #create the content
+    if len(df) == 0:
+        content = html.Div('Loading...', style={'padding':'2em'})
+    else:
+        innerContent=[]
+        for i in last:
+            innerContent.append(html.Div(str(i)),)
+            innerContent.append(html.Br(),)
+        content=html.Div(innerContent, style={'padding':'2em'})
 
     return content
