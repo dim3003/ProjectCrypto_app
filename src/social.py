@@ -38,7 +38,9 @@ def socialInit():
 
 
     #smoothed sentiment value
-    if 1 < len(df) < 5:
+    if len(df) == 0:
+        df['smoothed_sentiment'] = 0
+    elif 1 < len(df) < 5:
         df['smoothed_sentiment'] = (df['sentiment'] + 1) / 2
     elif 5 < len(df) < 100: #takes all the db if its less than 100 to do the rolling mean otherwise takes half only
         df['smoothed_sentiment'] = (df['sentiment'].rolling(5).mean() + 1) / 2
@@ -79,7 +81,6 @@ def socialGraph(verified):
     #filters the database if verified only is selected
     if verified == 'verifTweet':
         df = df[df.verified == True]
-        print(df)
 
     #last sentiment_term
     lastSentiment = 0
@@ -148,7 +149,7 @@ def socialDrop(verified, typeChoice):
         #check if unique tweets
         i = 1
         while len(pd.unique(last)) < 10:
-            last = df.iloc[-(10 + i):, 1]
+            last = pd.unique(df.iloc[-(10 + i):, 1])
             i+=1
 
     #create the content
