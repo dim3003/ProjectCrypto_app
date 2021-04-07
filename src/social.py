@@ -141,25 +141,15 @@ def socialDrop(verified, typeChoice):
 
 
     #last 10 tweets from the db
-    if len(df.iloc[:, 1]) < 10:
+    if len(df.iloc[:, 1]) < 15:
         last = df.iloc[:, 1]
     else:
         last = df.iloc[-10:, 1]
-
-    #check if unique tweets
-    unique = set()
-    for i in last:
-        if i not in unique:
-            unique.add(i)
-    diff = len(last) - len(unique)
-
-    if diff > 0:
-        last = df.iloc[-(10+diff):,1]
-        unique = set()
-        for i in last:
-            if i not in unique:
-                unique.add(i)
-        last = unique
+        #check if unique tweets
+        i = 1
+        while len(pd.unique(last)) < 10:
+            last = df.iloc[-(10 + i):, 1]
+            i+=1
 
     #create the content
     innerContent=[]

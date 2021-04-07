@@ -29,22 +29,6 @@ def tweet_stream():
     conn.commit()
 
 
-    df = pd.read_sql("SELECT * FROM sentiment WHERE tweet LIKE '%bitcoin%' ORDER BY unix DESC LIMIT 1000", conn)
-
-
-    #smoothed sentiment calculation
-    if len(df) < 5:
-        df['smoothed_sentiment'] = df['sentiment']
-    elif 5 < len(df) < 100: #takes all the db if its less than 100 to do the rolling mean otherwise takes half only
-        df['smoothed_sentiment'] = (df['sentiment'].rolling(5).mean() + 1) / 2
-    else:
-        df['smoothed_sentiment'] = (df['sentiment'].rolling(100).mean() + 1) / 2
-
-    # date column
-    df['date'] = pd.to_datetime(df['unix'],unit='ms')
-    df.sort_values('date',inplace=True)
-
-
 
     #Create a class to scrap stream of tweet
     class Listener(StreamListener):
