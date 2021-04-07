@@ -45,7 +45,7 @@ app.layout = html.Div([
     dcc.Interval(
         id='social_interval',
         disabled=False,
-        interval=1*10000,
+        interval=1*3000,
         n_intervals=0
     ),
     dcc.Interval(

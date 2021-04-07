@@ -64,7 +64,7 @@ def tweet_stream():
                 auth.set_access_token(include.config.access_token, include.config.access_token_secret)
 
                 twitterStream = Stream(auth, Listener())
-                twitterStream.filter(track=["Ethereum"])
+                twitterStream.filter(track=["Bitcoin"])
             except Exception as e:
                 print(str(e))
                 time.sleep(5)

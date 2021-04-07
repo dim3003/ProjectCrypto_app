@@ -38,9 +38,7 @@ def socialInit():
 
 
     #smoothed sentiment value
-    if len(df) == 0:
-        df['smoothed_sentiment'] = 0
-    elif 1 < len(df) < 5:
+    if len(df) < 5:
         df['smoothed_sentiment'] = (df['sentiment'] + 1) / 2
     elif 5 < len(df) < 100: #takes all the db if its less than 100 to do the rolling mean otherwise takes half only
         df['smoothed_sentiment'] = (df['sentiment'].rolling(5).mean() + 1) / 2
