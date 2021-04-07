@@ -39,7 +39,7 @@ def socialInit():
 
     #smoothed sentiment value
     if 1 < len(df) < 5:
-        df['smoothed_sentiment'] = df['sentiment']
+        df['smoothed_sentiment'] = (df['sentiment'] + 1) / 2
     elif 5 < len(df) < 100: #takes all the db if its less than 100 to do the rolling mean otherwise takes half only
         df['smoothed_sentiment'] = (df['sentiment'].rolling(5).mean() + 1) / 2
     else:
@@ -85,7 +85,7 @@ def socialGraph(verified):
     lastSentiment = 0
 
     if  5 >= len(df) >= 1:
-        lastSemtiment = df['smoothed_sentiment'].iloc[-1] #if smoothed sentiment is on 1 last
+        lastSentiment = df['smoothed_sentiment'].iloc[0] #if smoothed sentiment is on 1 last
     elif 5 < len(df) < 100:
         lastSentiment = df['smoothed_sentiment'].iloc[-5] #if smoothed sentiment is on 5 last
     elif 100 <= len(df):

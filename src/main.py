@@ -49,6 +49,12 @@ app.layout = html.Div([
         n_intervals=0
     ),
     dcc.Interval(
+        id='social_drop_interval',
+        disabled=False,
+        interval=1*15000,
+        n_intervals=0
+    ),
+    dcc.Interval(
             id='interval-component',
             interval=1*10000, # in milliseconds
             n_intervals=0
@@ -124,8 +130,9 @@ def update_content(verified, num):
 #Tweet dropdown
 @app.callback(Output('tweetsList', 'children'),
              [Input('verifiedChoice', 'value'),
-              Input('tweetDropdown', 'value')])
-def loadList(verified, typeChoice):
+              Input('tweetDropdown', 'value'),
+              Input('social_drop_interval', 'n_intervals')])
+def loadList(verified, typeChoice, num):
     return social.socialDrop(verified, typeChoice)
 
 
