@@ -30,7 +30,7 @@ def tweet_stream():
 
 
     df = pd.read_sql("SELECT * FROM sentiment WHERE tweet LIKE '%bitcoin%' ORDER BY unix DESC LIMIT 1000", conn)
-    df.sort_values('unix',inplace=True)
+
 
     #smoothed sentiment calculation
     if len(df) < 5:
@@ -42,6 +42,8 @@ def tweet_stream():
 
     # date column
     df['date'] = pd.to_datetime(df['unix'],unit='ms')
+    df.sort_values('date',inplace=True)
+
 
 
     #Create a class to scrap stream of tweet

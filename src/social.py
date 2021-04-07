@@ -12,6 +12,7 @@ import dash_table as dtable
 import plotly
 import logging
 import random
+import numpy as np
 from dash.dependencies import Output, State, Input
 import plotly.graph_objs as go
 
@@ -34,10 +35,10 @@ def socialInit():
 
     global df
     df = pd.read_sql("SELECT * FROM sentiment WHERE tweet LIKE '%bitcoin%' ORDER BY unix DESC LIMIT 1000", conn)
-    df.sort_values('unix',inplace=True)
+
 
     #smoothed sentiment value
-    if len(df) < 5:
+    if 1 < len(df) < 5:
         df['smoothed_sentiment'] = df['sentiment']
     elif 5 < len(df) < 100: #takes all the db if its less than 100 to do the rolling mean otherwise takes half only
         df['smoothed_sentiment'] = (df['sentiment'].rolling(5).mean() + 1) / 2
@@ -46,6 +47,8 @@ def socialInit():
 
     # date column
     df['date'] = pd.to_datetime(df['unix'],unit='ms')
+    if 'date' in df.columns:
+        df.sort_values('date', inplace=True)
 
     return df
 
@@ -76,13 +79,17 @@ def socialGraph(verified):
     #filters the database if verified only is selected
     if verified == 'verifTweet':
         df = df[df.verified == True]
+        print(df)
 
     #last sentiment_term
     lastSentiment = 0
 
-    if len(df['smoothed_sentiment']) > 0:
-        lastSentiment = df['smoothed_sentiment'].iloc[-1]
-
+    if  5 >= len(df) >= 1:
+        lastSemtiment = df['smoothed_sentiment'].iloc[-1] #if smoothed sentiment is on 1 last
+    elif 5 < len(df) < 100:
+        lastSentiment = df['smoothed_sentiment'].iloc[-5] #if smoothed sentiment is on 5 last
+    elif 100 <= len(df):
+        lastSentiment = df['smoothed_sentiment'].iloc[-100] #if smoothed sentiment is on 100 last$
 
     content = html.Div([
                 html.Div(
@@ -91,8 +98,8 @@ def socialGraph(verified):
                         figure={ #Live graph figure line
                             'data': [
                                 go.Scatter(
-                                    x=df.index,
-                                    y=df['smoothed_sentiment']
+                                    x=df['date'],
+                                    y=df['smoothed_sentiment'].dropna() #takes only smoothed sentiment with values
                                 )],
 
                                 'layout': go.Layout(
@@ -140,12 +147,19 @@ def socialDrop(verified, typeChoice):
         last = df.iloc[-10:, 1]
 
     #check if unique tweets
+    unique = set()
+    for i in last:
+        if i not in unique:
+            unique.add(i)
+    diff = len(last) - len(unique)
 
-    ## compare all tweets & count number of double
-
-    ## assert last to -(10 + number of double)
-
-    ## remove  doubles from list with mode or smth
+    if diff > 0:
+        last = df.iloc[-(10+diff):,1]
+        unique = set()
+        for i in last:
+            if i not in unique:
+                unique.add(i)
+        last = unique
 
     #create the content
     innerContent=[]
