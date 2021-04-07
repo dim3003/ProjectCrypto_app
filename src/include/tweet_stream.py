@@ -1,5 +1,5 @@
 # coding=utf-8
-def tweet_stream():
+def tweet_stream(sent):
     import include.config
     from tweepy import Stream, OAuthHandler
     from tweepy.streaming import StreamListener
@@ -15,6 +15,8 @@ def tweet_stream():
     #################
     # Database config
     #################
+    print(sent)
+    print(type(sent))
 
     conn = sqlite3.connect('./include/twitter.db')
     c = conn.cursor()
@@ -48,6 +50,8 @@ def tweet_stream():
                 if data['lang'] == 'en': #and data['retweet_count'] > 0
                     c.execute("INSERT INTO sentiment (unix, tweet, sentiment, verified) VALUES (?, ?, ?, ?)",(time_ms, tweet, sentiment, verified))
                     conn.commit()
+                    c.execute(f"DELETE FROM sentiment WHERE tweet NOT LIKE '%{sent}%'")
+                    conn.commit()
 
 
             except  KeyError as e:
@@ -64,7 +68,7 @@ def tweet_stream():
                 auth.set_access_token(include.config.access_token, include.config.access_token_secret)
 
                 twitterStream = Stream(auth, Listener())
-                twitterStream.filter(track=["Bitcoin"])
+                twitterStream.filter(track=[sent])
             except Exception as e:
                 print(str(e))
                 time.sleep(5)

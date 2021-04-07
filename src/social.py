@@ -20,7 +20,7 @@ import include.tweet_stream as ts
 from collections import deque
 import dash_bootstrap_components as dbc
 
-def socialInit():
+def socialInit(verified):
 
     #Db update_content
     ##################
@@ -34,8 +34,11 @@ def socialInit():
     create_table()
 
     global df
-    df = pd.read_sql("SELECT * FROM sentiment WHERE tweet LIKE '%bitcoin%' ORDER BY unix DESC LIMIT 1000", conn)
+    df = pd.read_sql("SELECT * FROM sentiment ORDER BY unix DESC LIMIT 1000", conn)
 
+    #filters the database if verified only is selected
+    if verified == 'verifTweet':
+        df = df[df.verified == True]
 
     #smoothed sentiment value
     if len(df) < 5:
@@ -71,14 +74,12 @@ def socialHeader(crypto):
 
 def socialGraph(verified):
 
-    df = socialInit() #gets the data
+    df = socialInit(verified) #gets the data
 
     #Update Content
     ###############
 
-    #filters the database if verified only is selected
-    if verified == 'verifTweet':
-        df = df[df.verified == True]
+
 
     #last sentiment_term
     lastSentiment = 0
@@ -130,14 +131,7 @@ def socialGraph(verified):
 
 
 def socialDrop(verified, typeChoice):
-    df = socialInit()
-    while len(df) <= 10:
-        df = socialInit() #gets the data
-
-
-    if verified == 'verifTweet':
-        df = df[df.verified == True]
-
+    df = socialInit(verified)
 
     #last 10 tweets from the db
     if len(df.iloc[:, 1]) < 15:
@@ -151,10 +145,13 @@ def socialDrop(verified, typeChoice):
             i+=1
 
     #create the content
-    innerContent=[]
-    for i in last:
-        innerContent.append(html.Div(str(i)),)
-        innerContent.append(html.Br(),)
-    content=html.Div(innerContent, style={'padding':'2em'})
+    if len(df) == 0:
+        content = html.Div('Loading...', style={'padding':'2em'})
+    else:
+        innerContent=[]
+        for i in last:
+            innerContent.append(html.Div(str(i)),)
+            innerContent.append(html.Br(),)
+        content=html.Div(innerContent, style={'padding':'2em'})
 
     return content

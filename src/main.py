@@ -45,7 +45,7 @@ app.layout = html.Div([
     dcc.Interval(
         id='social_interval',
         disabled=False,
-        interval=1*3000,
+        interval=1*4000,
         n_intervals=0
     ),
     dcc.Interval(
@@ -107,9 +107,10 @@ app.layout = html.Div([
 #Load social tab content
 ########################
 @app.callback(Output('dbLoader', 'children'),
-              Input('dbLoader', 'children'))
-def loadDB(num):
-    ts.tweet_stream() #creates the twitter live stream
+             [Input('sentiment_term', 'value'),
+              Input('dbLoader', 'children')])
+def loadDB(sent, num):
+    ts.tweet_stream(sent) #creates the twitter live stream
 
 import social
 
