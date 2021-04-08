@@ -19,7 +19,7 @@ import plotly.figure_factory as ff
 def analysisPage(df=None):
     #print(name)
     name = df['Name'].values[0]
-    df = bs.historicalData()
+    df = bs.historicalData(df['Symbol'].values[0])
     content = html.Div([
         html.Div([html.Div(
                     dcc.Graph(
@@ -57,26 +57,25 @@ def analysisPage(df=None):
                         ],style={'width':'60%', 'display':'inline-block'}),
                 html.Div([html.Div(
                     dcc.Graph(
-                        id='twitterPie',
                         figure={
                             'data': [
                                 go.Box(
                                     x=df['Close'].pct_change().dropna(),
                                     showlegend=False,
-                                    notched=True
+                                    notched=True,
+                                    name=f""
                                 )],
 
                                 'layout': go.Layout(
-                                    title=f'Distribution of {name} price (1min)',
-                                    xaxis={'title': 'Time'},
-                                    yaxis={'title': 'Price ($)'},
+                                    title=f'Box Plot of {name} Returns (1min)',
+                                    xaxis={'title': 'Return'},
+                                    yaxis={'title':''},
                                     height= 300,
-                                    margin={'l': 80, 'b': 40, 't': 90, 'r': 40})
+                                    margin={'l': 80, 'b': 40, 't': 90, 'r': 30})
                                }
                         ), style={'width':'100%', 'height':'10%', 'display':'block'}),
                 html.Div(
-                    dcc.Graph(
-                        id='twitterPie',
+                    dcc.Graph( 
                         figure={
                             'data': [
                                 go.Histogram(
@@ -84,11 +83,11 @@ def analysisPage(df=None):
                                 )],
 
                                 'layout': go.Layout(
-                                    title=f'Distribution of {name} price (1min)',
-                                    xaxis={'title': 'Time'},
-                                    yaxis={'title': 'Price ($)'},
+                                    title=f'Distribution of {name} Returns (1min)',
+                                    xaxis={'title': 'Returns'},
+                                    yaxis={'title': 'Count'},
                                     height= 300,
-                                    margin={'l': 80, 'b': 40, 't': 90, 'r': 40})
+                                    margin={'l': 80, 'b': 40, 't': 90, 'r': 30})
                                }
                         ), style={'width':'100%', 'height':'10%', 'display':'block'})
                         ],style={'width':'30%', 'display':'inline-block'}),

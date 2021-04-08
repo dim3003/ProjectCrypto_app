@@ -56,9 +56,9 @@ def livedata():
     ws = websocket.WebSocketApp(SOCKET, on_open=on_open, on_close=on_close, on_message=on_message)
     ws.run_forever()
 
-def historicalData():
+def historicalData(symbol):
     # fetch 1 minute klines for the last day up until now
-    klines = client.get_historical_klines("BTCUSD", Client.KLINE_INTERVAL_1MINUTE, "3 day ago UTC") # timing à choisir soit en direct avec un websocket soit un appel API
+    klines = client.get_historical_klines(f"{symbol}USD", Client.KLINE_INTERVAL_1MINUTE, "3 day ago UTC") # timing à choisir soit en direct avec un websocket soit un appel API
     columns = ['Date','Open','Close','High','Low','Volume','CloseTime','QuoteAssetVolume','NumberofTrade','TakerbuybaseV','TakerbuyquoteV','Ignore']
     df = pd.DataFrame(klines,columns=columns)
     df['Date'] = pd.to_datetime(df['Date']/1000,unit='s')

@@ -56,7 +56,7 @@ app.layout = html.Div([
     ),
     dcc.Interval(
             id='interval-component',
-            interval=1*10000, # in milliseconds
+            interval=1*60000, # in milliseconds => 60000 miliseconds = 1min
             n_intervals=0
         ),
     html.H2("Crypto project",className="m-2",style={'text-align':'center'}),
@@ -72,7 +72,8 @@ app.layout = html.Div([
     # NavBar ##
     dcc.Tabs(id="tabs-styled-with-props", value='tab-1',children=[
         dcc.Tab(label='Home', value='tab-1'),
-        dcc.Tab(label='Analysis', value='tab-2', children = html.Div([html.Div(id='analysis')])),
+        dcc.Tab(label='Analysis', value='tab-2', children = html.Div([html.Div(id='analysis'),
+        html.Div(id='cryptoStat')])),
         dcc.Tab(label='Social',
                 value='tab-3',
                 children = html.Div([html.Div(id='dbLoader'),
@@ -142,12 +143,61 @@ def loadList(verified, typeChoice, num):
 import analysisTab
 @app.callback(Output('analysis', 'children'),
               [Input(component_id='sentiment_term', component_property='value'),
-              Input('social_interval', 'n_intervals')])
+              Input('interval-component', 'n_intervals')])
 def update_content_analysis_tab(sentiment_term,num):
     content = analysisTab.analysisPage(df = coindf[coindf['Name'] == sentiment_term]) #gets content from social.py
     return content
 
+def defineCard(title,text):
+    card_content = [
+        dbc.CardHeader(title),
+        dbc.CardBody(
+            [
+                html.H5(title, className="card-title"),
+                html.P(
+                    text,
+                    className="card-text",
+                ),
+            ]
+        ),
+    ]
 
+    return card_content
+
+
+@app.callback(Output('cryptoStat','children'),
+            Input(component_id='sentiment_term', component_property='value'))
+def update_content_stat_crypto(sentiment_term):
+    df = coindf[coindf['Name'] == sentiment_term]
+    row_1 = dbc.Row(
+    [
+        dbc.Col(dbc.Card(defineCard("Rank",df.index), color="primary", outline=True)),
+        dbc.Col(dbc.Card(defineCard("Symbol",df['Symbol']), color="secondary", outline=True)),
+        dbc.Col(dbc.Card(defineCard("Market Cap",df['Market Cap']), color="info", outline=True)),
+    ],
+    className="m-4",
+    )
+
+    row_2 = dbc.Row(
+        [
+            dbc.Col(dbc.Card(defineCard("Price",df['Price']), color="success", outline=True)),
+            dbc.Col(dbc.Card(defineCard("Circulating supply",df['Circulating Supply']), color="warning", outline=True)),
+            dbc.Col(dbc.Card(defineCard("Volumne (24h)",df['Volume(24h)']), color="danger", outline=True)),
+        ],
+        className="m-4",
+    )
+
+    row_3 = dbc.Row(
+        [
+            dbc.Col(dbc.Card(defineCard("%change (1h)",df["%1h"]), color="primary", outline=True)),
+            dbc.Col(dbc.Card(defineCard("%change (24h)",df["%24h"]), color="secondary", outline=True)),
+            dbc.Col(dbc.Card(defineCard("%change (7d)",df["%7d"]), color="info", outline=True)),
+        ],
+        className="m-4",
+    )
+    cards = html.Div([row_1, row_2,row_3])
+
+    return cards
 
 
 # Rendering Content
