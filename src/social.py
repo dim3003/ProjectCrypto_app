@@ -20,21 +20,14 @@ import include.tweet_stream as ts
 from collections import deque
 import dash_bootstrap_components as dbc
 
-def socialInit(verified):
+def socialInit(verified, sent):
 
     #Db update_content
     ##################
     conn = sqlite3.connect('./include/twitter.db')
     c = conn.cursor()
 
-    def create_table():
-        c.execute("CREATE TABLE IF NOT EXISTS sentiment(unix REAL, tweet TEXT, sentiment REAL, verified BOOLEAN)")
-        conn.commit()
-
-    create_table()
-
-    global df
-    df = pd.read_sql("SELECT * FROM sentiment ORDER BY unix DESC LIMIT 1000", conn)
+    df = pd.read_sql(f"SELECT * FROM sentiment WHERE tweet LIKE '%{sent}%' ORDER BY unix DESC LIMIT 1000", conn)
 
     #filters the database if verified only is selected
     if verified == 'verifTweet':
@@ -43,7 +36,7 @@ def socialInit(verified):
     #smoothed sentiment value
     if len(df) < 5:
         df['smoothed_sentiment'] = (df['sentiment'] + 1) / 2
-    elif 5 < len(df) < 100: #takes all the db if its less than 100 to do the rolling mean otherwise takes half only
+    elif 5 <= len(df) < 100: #takes all the db if its less than 100 to do the rolling mean otherwise takes half only
         df['smoothed_sentiment'] = (df['sentiment'].rolling(5).mean() + 1) / 2
     else:
         df['smoothed_sentiment'] = (df['sentiment'].rolling(100).mean() + 1) / 2
@@ -72,9 +65,9 @@ def socialHeader(crypto):
                     style={'margin':'1em 1em 0 1em'})
     return headerBlock
 
-def socialGraph(verified):
+def socialGraph(verified, sent):
 
-    df = socialInit(verified) #gets the data
+    df = socialInit(verified, sent) #gets the data
 
     #Update Content
     ###############
@@ -85,7 +78,7 @@ def socialGraph(verified):
     lastSentiment = 0
 
     if  5 >= len(df) >= 1:
-        lastSentiment = df['smoothed_sentiment'].iloc[0] #if smoothed sentiment is on 1 last
+        lastSentiment = df['smoothed_sentiment'].iloc[-1] #if smoothed sentiment is on 1 last
     elif 5 < len(df) < 100:
         lastSentiment = df['smoothed_sentiment'].iloc[-5] #if smoothed sentiment is on 5 last
     elif 100 <= len(df):
@@ -130,12 +123,12 @@ def socialGraph(verified):
     return content
 
 
-def socialDrop(verified, typeChoice):
-    df = socialInit(verified)
+def socialDrop(verified, typeChoice, sent):
+    df = socialInit(verified, sent)
 
     #last 10 tweets from the db
     if len(df.iloc[:, 1]) < 15:
-        last = df.iloc[:, 1]
+        last = df.iloc[:10, 1]
     else:
         last = df.iloc[-10:, 1]
         #check if unique tweets
