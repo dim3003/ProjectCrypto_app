@@ -20,21 +20,14 @@ import include.tweet_stream as ts
 from collections import deque
 import dash_bootstrap_components as dbc
 
-def socialInit(verified):
+def socialInit(verified, sent):
 
     #Db update_content
     ##################
     conn = sqlite3.connect('./include/twitter.db')
     c = conn.cursor()
 
-    def create_table():
-        c.execute("CREATE TABLE IF NOT EXISTS sentiment(unix REAL, tweet TEXT, sentiment REAL, verified BOOLEAN)")
-        conn.commit()
-
-    create_table()
-
-    global df
-    df = pd.read_sql("SELECT * FROM sentiment ORDER BY unix DESC LIMIT 1000", conn)
+    df = pd.read_sql(f"SELECT * FROM sentiment WHERE tweet LIKE '%{sent}%' ORDER BY unix DESC LIMIT 1000", conn)
 
     #filters the database if verified only is selected
     if verified == 'verifTweet':
@@ -72,9 +65,9 @@ def socialHeader(crypto):
                     style={'margin':'1em 1em 0 1em'})
     return headerBlock
 
-def socialGraph(verified):
+def socialGraph(verified, sent):
 
-    df = socialInit(verified) #gets the data
+    df = socialInit(verified, sent) #gets the data
 
     #Update Content
     ###############
@@ -130,8 +123,8 @@ def socialGraph(verified):
     return content
 
 
-def socialDrop(verified, typeChoice):
-    df = socialInit(verified)
+def socialDrop(verified, typeChoice, sent):
+    df = socialInit(verified, sent)
 
     #last 10 tweets from the db
     if len(df.iloc[:, 1]) < 15:

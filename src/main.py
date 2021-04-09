@@ -10,6 +10,7 @@ import dash_table as dtable
 import plotly
 import logging
 import random
+import numpy as np
 from dash.dependencies import Output, State, Input
 import plotly.graph_objs as go
 
@@ -18,11 +19,6 @@ from collections import deque
 import dash_bootstrap_components as dbc
 
 import include.webscrapper as webs
-
-#Drop the db if already existing one in the app
-conn = sqlite3.connect('./include/twitter.db')
-c = conn.cursor()
-c.execute("DROP TABLE IF EXISTS sentiment")
 
 
 logging.basicConfig(filename='infos.log',level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -76,24 +72,20 @@ app.layout = html.Div([
         html.Div(id='cryptoStat')])),
         dcc.Tab(label='Social',
                 value='tab-3',
-                children = html.Div([html.Div(id='dbLoader'),
-                                    html.Div(id='social', children = [
-                                        html.Div(id='initSocial',
-                                                 children = dcc.RadioItems(
-                                                        id='verifiedChoice',
-                                                        value = 'allTweet')),
-                                        html.Div(id='initGraph'), #graphs block
-                                        html.Div([ #dropdown block
-                                            dcc.Dropdown(
-                                                id='tweetDropdown',
-                                                options=[
-                                                    {'label': 'Most recent tweets', 'value': 'mrtweet'}
-                                                    #{'label': 'Most positive tweets (last 24h)', 'value': 'mptweet'}, # TO BE ADDED LATER WITH FULL DB
-                                                    #{'label': 'Most negative tweets (last 24h)', 'value': 'mntweet'}
-                                                        ],
-                                                value='mrtweet'
-                                                    ),
-                                            html.Div(id='tweetsList')])
+                children = html.Div([html.Div(id='social',
+                                              children = [html.Div(id = 'dbLoader'),
+                                                          html.Div(id='initSocial',
+                                                                   children = dcc.RadioItems(id='verifiedChoice',
+                                                                                             value = 'allTweet')),
+                                                                              html.Div(id='initGraph'), #graphs block
+                                                                              html.Div([ #dropdown block
+                                                                              dcc.Dropdown(id='tweetDropdown',
+                                                                                           options=[{'label': 'Most recent tweets', 'value': 'mrtweet'},
+                                                                                                   #{'label': 'Most positive tweets (last 24h)', 'value': 'mptweet'}, # TO BE ADDED LATER WITH FULL DB
+                                                                                                   #{'label': 'Most negative tweets (last 24h)', 'value': 'mntweet'}
+                                                                                                   ],
+                                                                                           value='mrtweet'),
+                                                                              html.Div(id='tweetsList')])
                                     ]) #close id social div children
                         ])) #close dcc.Tab social + Tabs + Dropdown
 
@@ -107,11 +99,13 @@ app.layout = html.Div([
 
 #Load social tab content
 ########################
+
+cryptos = list(coindf['Name'].values) #get all cryptos names
+
 @app.callback(Output('dbLoader', 'children'),
-             [Input('sentiment_term', 'value'),
-              Input('dbLoader', 'children')])
-def loadDB(sent, num):
-    ts.tweet_stream(sent) #creates the twitter live stream
+              Input('dbLoader', 'children'))
+def tweetStream(dummy):
+    ts.tweet_stream(cryptos) #creates the twitter live stream
 
 import social
 
@@ -124,18 +118,20 @@ def loadHeader(crypto):
 #create graph content from social.py
 @app.callback(Output('initGraph', 'children'),
               [Input('verifiedChoice', 'value'),
+              Input('sentiment_term', 'value'),
                Input('social_interval', 'n_intervals')])
-def update_content(verified, num):
-    content = social.socialGraph(verified)
+def update_content(verified, sent, num):
+    content = social.socialGraph(verified, sent)
     return content
 
 #Tweet dropdown
 @app.callback(Output('tweetsList', 'children'),
              [Input('verifiedChoice', 'value'),
               Input('tweetDropdown', 'value'),
+              Input('sentiment_term', 'value'),
               Input('social_drop_interval', 'n_intervals')])
-def loadList(verified, typeChoice, num):
-    return social.socialDrop(verified, typeChoice)
+def loadList(verified, typeChoice, sent, num):
+    return social.socialDrop(verified, typeChoice, sent)
 
 
 #Load analysis tab content
