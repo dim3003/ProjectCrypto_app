@@ -19,7 +19,7 @@ pip install -r requirements.txt
 * ajouter des stats dexcriptives au projet
 * ML Model 
 * arreter flux de tweet
--- data
+-[] data
 -- trouver les indicateurs
 -- cleaning data
 -- tester les différents algos sur bitcoin
