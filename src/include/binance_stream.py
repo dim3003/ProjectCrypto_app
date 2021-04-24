@@ -58,7 +58,10 @@ def livedata():
 
 def historicalData(symbol):
     # fetch 1 minute klines for the last day up until now
-    klines = client.get_historical_klines(f"{symbol}USD", Client.KLINE_INTERVAL_1MINUTE, "3 day ago UTC") # timing à choisir soit en direct avec un websocket soit un appel API
+    try:
+        klines = client.get_historical_klines(f"{symbol}USD", Client.KLINE_INTERVAL_1MINUTE, "3 day ago UTC") # timing à choisir soit en direct avec un websocket soit un appel API
+    except Exception:
+        klines = client.get_historical_klines(f"{symbol}BTC", Client.KLINE_INTERVAL_1MINUTE, "3 day ago UTC")
     columns = ['Date','Open','Close','High','Low','Volume','CloseTime','QuoteAssetVolume','NumberofTrade','TakerbuybaseV','TakerbuyquoteV','Ignore']
     df = pd.DataFrame(klines,columns=columns)
     df['Date'] = pd.to_datetime(df['Date']/1000,unit='s')
@@ -70,4 +73,3 @@ def historicalData(symbol):
 
 if __name__ == "__main__":
     df = historicalData()
-    #print(df['Close'])

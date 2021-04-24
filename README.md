@@ -1,5 +1,5 @@
 ## Presentation of project
-https://github.com/Sentdex/socialsentiment
+
 
 ## Install project and librairies
 
@@ -13,7 +13,6 @@ git clone https://github.com/GuillaumePv/ProjetCrypto_app.git
 ```bash
 pip install -r requirements.txt
 ```
-
 
 ## TO-DO
 * augmenter la vitesse de loading
@@ -29,3 +28,7 @@ pip install -r requirements.txt
 ## Code
 
 ### Possiblle extension
+
+## Bug
+
+* add values database (verified)
