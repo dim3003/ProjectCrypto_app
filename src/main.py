@@ -41,7 +41,7 @@ app.layout = html.Div([
     dcc.Interval(
         id='social_interval',
         disabled=False,
-        interval=1*4000,
+        interval=1*2000,
         n_intervals=0
     ),
     dcc.Interval(
@@ -52,7 +52,7 @@ app.layout = html.Div([
     ),
     dcc.Interval(
             id='interval-component',
-            interval=1*60000, # in milliseconds => 60000 miliseconds = 1min
+            interval=1*30000, # in milliseconds => 30000 miliseconds = 30secs
             n_intervals=0
         ),
     html.H2("Crypto project",className="m-2",style={'text-align':'center'}),

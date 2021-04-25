@@ -27,6 +27,9 @@ def socialInit(verified, sent):
     conn = sqlite3.connect('./include/twitter.db')
     c = conn.cursor()
 
+    c.execute("CREATE TABLE IF NOT EXISTS sentiment(unix REAL, tweet TEXT, sentiment REAL, verified BOOLEAN)")
+    conn.commit()
+
     df = pd.read_sql(f"SELECT * FROM sentiment WHERE tweet LIKE '%{sent}%' ORDER BY unix DESC LIMIT 1000", conn)
 
     #filters the database if verified only is selected
@@ -71,8 +74,6 @@ def socialGraph(verified, sent):
 
     #Update Content
     ###############
-
-
 
     #last sentiment_term
     lastSentiment = 0
