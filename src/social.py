@@ -44,16 +44,18 @@ def socialInit(verified, sent):
     else:
         df['smoothed_sentiment'] = (df['sentiment'].rolling(100).mean() + 1) / 2
 
+
     # date column
     df['date'] = pd.to_datetime(df['unix'],unit='ms')
     if 'date' in df.columns:
         df.sort_values('date', inplace=True)
 
+    df = df.dropna()
+
     return df
 
 
 def socialHeader(crypto):
-
     headerBlock = html.Div([
                     html.H3(f'Twitter live sentiment of {crypto}'),
                     dcc.RadioItems(
@@ -66,16 +68,17 @@ def socialHeader(crypto):
                         labelStyle={'display': 'inline-block', 'padding':'1em'}
                     )],
                     style={'margin':'1em 1em 0 1em'})
+
     return headerBlock
 
 def socialGraph(verified, sent):
-
     df = socialInit(verified, sent) #gets the data
 
     #Update Content
     ###############
 
     #last sentiment_term
+
     lastSentiment = 0
 
     if  5 >= len(df) >= 1:
@@ -85,41 +88,46 @@ def socialGraph(verified, sent):
     elif 100 <= len(df):
         lastSentiment = df['smoothed_sentiment'].iloc[-100] #if smoothed sentiment is on 100 last$
 
-    content = html.Div([
-                html.Div(
-                    dcc.Graph(
-                        id='twitter',
-                        figure={ #Live graph figure line
-                            'data': [
-                                go.Scatter(
-                                    x=df['date'],
-                                    y=df['smoothed_sentiment'].dropna() #takes only smoothed sentiment with values
-                                )],
+    if len(df) > 0:
+        content = html.Div([
+                    html.Div(
+                        dcc.Graph(
+                            id='twitter',
+                            figure={ #Live graph figure line
+                                'data': [
+                                    go.Scatter(
+                                        x=df['date'],
+                                        y=df['smoothed_sentiment'] #takes only smoothed sentiment with values
 
-                                'layout': go.Layout(
-                                    xaxis={'title': 'Time'},
-                                    yaxis={'title': 'Sentiment'},
-                                    margin={'l': 80, 'b': 40, 't': 10, 'r': 40},
-                                    plot_bgcolor='#ececec',
-                                    yaxis_range=[0,1])
-                               }
-                        ), style={'width':'60%', 'display':'inline-block'}),
-                html.Div(
-                    dcc.Graph(
-                        id='twitterPie',
-                        figure={ #pie chart
-                            'data': [
-                                go.Pie(
-                                    marker = dict(colors=['1cbf1f', 'c1281f']),
-                                    labels = ['Positive', 'Negative'],
-                                    values = [lastSentiment, 1 - lastSentiment])
-                                ],
+                                    )],
 
-                                'layout': go.Layout(
-                                    margin={'l': 80, 'b': 40, 't': 90, 'r': 40})
-                               }
-                        ), style={'width':'30%', 'display':'inline-block'})
-                ])
+                                    'layout': go.Layout(
+                                        xaxis={'title': 'Time'},
+                                        yaxis={'title': 'Sentiment'},
+                                        margin={'l': 80, 'b': 40, 't': 10, 'r': 40},
+                                        plot_bgcolor='#ececec',
+                                        yaxis_range=[0,1])
+                                   }
+                            ), style={'width':'60%', 'display':'inline-block'}),
+
+                    html.Div(
+                        dcc.Graph(
+                            id='twitterPie',
+                            figure={ #pie chart
+                                'data': [
+                                    go.Pie(
+                                        marker = dict(colors=['1cbf1f', 'c1281f']),
+                                        labels = ['Positive', 'Negative'],
+                                        values = [lastSentiment, 1 - lastSentiment])
+                                    ],
+
+                                    'layout': go.Layout(
+                                        margin={'l': 80, 'b': 40, 't': 90, 'r': 40})
+                                   }
+                            ), style={'width':'30%', 'display':'inline-block'})
+                    ])
+    else:
+        content = html.Div("LOADING GRAPHS ...", style={'width':'30%', 'display':'inline-block'})
 
     return content
 
@@ -139,6 +147,7 @@ def socialDrop(verified, typeChoice, sent):
             i+=1
 
     #create the content
+
     if len(df) == 0:
         content = html.Div('Loading...', style={'padding':'2em'})
     else:

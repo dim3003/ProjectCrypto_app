@@ -20,15 +20,10 @@ def tweet_stream(cryptos):
     conn = sqlite3.connect('./include/twitter.db')
     c = conn.cursor()
 
-    c.execute("DROP TABLE IF EXISTS sentiment")
+
+    c.execute("CREATE TABLE IF NOT EXISTS sentiment (tweet REAL, tweet TEXT, sentiment REAL, verified BOOLEAN)")
     conn.commit()
 
-    c.execute("CREATE TABLE IF NOT EXISTS sentiment (unix REAL, tweet TEXT, sentiment REAL, verified BOOLEAN)")
-    conn.commit()
-
-
-    c.execute("DELETE FROM sentiment")
-    conn.commit()
 
     #Create a class to scrap stream of tweet
     class Listener(StreamListener):
@@ -41,11 +36,14 @@ def tweet_stream(cryptos):
 
                     tweet = unidecode(data['text'])
 
+
                     time_ms = data['timestamp_ms'] # à changer pour avoir directment les liens
+
                     vs = analyser.polarity_scores(tweet)
                     sentiment = vs['compound']
                     verified = data['user']['verified']
                     #print(time_ms,tweet,sentiment, verified)
+
 
                     #insert data in SQL database
                     if data['lang'] == 'en': #and data['retweet_count'] > 0
@@ -70,6 +68,7 @@ def tweet_stream(cryptos):
 
                 twitterStream = Stream(auth, Listener())
                 twitterStream.filter(track = cryptos)
+
             except Exception as e:
                 print(str(e))
                 time.sleep(5)

@@ -15,6 +15,7 @@ from dash.dependencies import Output, State, Input
 import plotly.graph_objs as go
 
 import include.tweet_stream as ts
+import include.loadTwint as loadTwint
 from collections import deque
 import dash_bootstrap_components as dbc
 
@@ -73,7 +74,8 @@ app.layout = html.Div([
         dcc.Tab(label='Social',
                 value='tab-3',
                 children = html.Div([html.Div(id='social',
-                                              children = [html.Div(id = 'dbLoader'),
+                                              children = [html.Div(id = 'dbDaily'),
+                                                          html.Div(id = 'dbLoader'),
                                                           html.Div(id='initSocial',
                                                                    children = dcc.RadioItems(id='verifiedChoice',
                                                                                              value = 'allTweet')),
@@ -102,10 +104,20 @@ app.layout = html.Div([
 
 cryptos = list(coindf['Name'].values) #get all cryptos names
 
+
+@app.callback(Output('dbDaily', 'children'),
+              Input('dbDaily', 'children'))
+def tweetStream(dummy):
+    loadTwint.loadTwint(cryptos) #creates twitter daily tweets
+
+
 @app.callback(Output('dbLoader', 'children'),
               Input('dbLoader', 'children'))
 def tweetStream(dummy):
     ts.tweet_stream(cryptos) #creates the twitter live stream
+
+
+
 
 import social
 
