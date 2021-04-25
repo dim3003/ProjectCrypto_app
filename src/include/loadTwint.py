@@ -37,8 +37,8 @@ def loadTwint(cryptos):
         c.Lang = "en"
         c.Min_replies = 1 # min replies
         c.Output = f"tempDailyTweets/dailyTweets.json"
-        c.Since = "2021-04-24"
-        c.Until = "2021-04-25"
+        c.Since = (dt.datetime.today() - dt.timedelta(1)).strftime('%Y-%m-%d') 
+        c.Until = dt.datetime.today().strftime('%Y-%m-%d')
         c.Hide_output = True
         c.Store_json = True
         c.Hide_output = False

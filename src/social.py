@@ -88,7 +88,7 @@ def socialGraph(verified, sent):
     elif 100 <= len(df):
         lastSentiment = df['smoothed_sentiment'].iloc[-100] #if smoothed sentiment is on 100 last$
 
-    if len(df) > 0:
+    if len(df) > 10:
         content = html.Div([
                     html.Div(
                         dcc.Graph(
