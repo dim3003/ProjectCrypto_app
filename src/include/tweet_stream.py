@@ -20,15 +20,10 @@ def tweet_stream(cryptos):
     conn = sqlite3.connect('./include/twitter.db')
     c = conn.cursor()
 
-    c.execute("DROP TABLE IF EXISTS sentiment")
+
+    c.execute("CREATE TABLE IF NOT EXISTS sentiment (tweet REAL, tweet TEXT, sentiment REAL, verified BOOLEAN)")
     conn.commit()
 
-    c.execute("CREATE TABLE sentiment(unix REAL, tweet TEXT, sentiment REAL, verified BOOLEAN)")
-    conn.commit()
-
-
-    c.execute("DELETE FROM sentiment")
-    conn.commit()
 
     #Create a class to scrap stream of tweet
     class Listener(StreamListener):
@@ -36,27 +31,35 @@ def tweet_stream(cryptos):
             try:
 
                 data = json.loads(data)
-                tweet = unidecode(data['text'])
 
-                time_ms = data['timestamp_ms'] # à changer pour avoir directment les liens
-                vs = analyser.polarity_scores(tweet)
-                sentiment = vs['compound']
-                verified = data['user']['verified']
-                #print(time_ms,tweet,sentiment, verified)
+                if 'limit' not in list(data.keys()):
 
-                #insert data in SQL database
-                if data['lang'] == 'en': #and data['retweet_count'] > 0
-                    c.execute("INSERT INTO sentiment (unix, tweet, sentiment, verified) VALUES (?, ?, ?, ?)",(time_ms, tweet, sentiment, verified))
-                    conn.commit()
+                    tweet = unidecode(data['text'])
+
+
+                    time_ms = data['timestamp_ms'] # à changer pour avoir directment les liens
+
+                    vs = analyser.polarity_scores(tweet)
+                    sentiment = vs['compound']
+                    verified = data['user']['verified']
+                    #print(time_ms,tweet,sentiment, verified)
+
+
+                    #insert data in SQL database
+                    if data['lang'] == 'en': #and data['retweet_count'] > 0
+                        c.execute("INSERT INTO sentiment (unix, tweet, sentiment, verified) VALUES (?, ?, ?, ?)",(time_ms, tweet, sentiment, verified))
+                        conn.commit()
 
 
             except  KeyError as e:
                 print(str(e))
+                time.sleep(1000)
+
             return True
 
         def on_error(self,status):
             print(status)
-            
+
     def createStreamTwitter():
         while True:
             try:
@@ -64,7 +67,8 @@ def tweet_stream(cryptos):
                 auth.set_access_token(include.config.access_token, include.config.access_token_secret)
 
                 twitterStream = Stream(auth, Listener())
-                twitterStream.filter(track = cryptos[:120])
+                twitterStream.filter(track = cryptos)
+
             except Exception as e:
                 print(str(e))
                 time.sleep(5)
