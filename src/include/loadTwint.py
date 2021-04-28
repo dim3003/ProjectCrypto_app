@@ -41,7 +41,6 @@ def loadTwint(cryptos):
         c.Until = dt.datetime.today().strftime('%Y-%m-%d')
         c.Hide_output = True
         c.Store_json = True
-        c.Hide_output = False
 
         tweets = twint.run.Search(c)
 
