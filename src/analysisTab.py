@@ -23,7 +23,7 @@ def analysisPage(df=None):
     content = html.Div([
         html.Div([html.Div(
                     dcc.Graph(
-                        id='twitter',
+                        id='graphPrice',
                         figure={
                             'data': [
                                 go.Scatter(
@@ -39,7 +39,7 @@ def analysisPage(df=None):
                         ), style={'width':'100%', 'display':'block'}),
                 html.Div(
                     dcc.Graph(
-                        id='twitterPie',
+                        id='graphStat',
                         figure={
                             'data': [
                                 go.Bar(
