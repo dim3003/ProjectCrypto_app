@@ -2,7 +2,6 @@
 import  sqlite3
 import pandas as pd
 
-import threading
 import dash
 import dash_html_components as html
 import dash_core_components as dcc
@@ -14,14 +13,20 @@ import numpy as np
 from dash.dependencies import Output, State, Input
 import plotly.graph_objs as go
 
-import include.tweet_stream as ts
-import include.loadTwint as loadTwint
 from collections import deque
 import dash_bootstrap_components as dbc
 
+# Our librairies #
 import include.webscrapper as webs
+import include.tweet_stream as ts
+import include.loadTwint as loadTwint
 
+# Our Pages #
+import social
+import analysisTab
+from homepage import homePage
 
+# Initialize log file #
 logging.basicConfig(filename='infos.log',level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # App creation with BOOTSTRAP
@@ -56,7 +61,7 @@ app.layout = html.Div([
             interval=1*30000, # in milliseconds => 30000 miliseconds = 30secs
             n_intervals=0
         ),
-    html.H2("Crypto project",className="m-2",style={'text-align':'center'}),
+    html.H2(dbc.Card(html.H2("The analysis of Crypto",className="m-2"), color="primary", outline=True),className="m-4",style={'text-align':'center'}),
 
     #Dropdown to choose Crypto
      dcc.Dropdown(
@@ -104,6 +109,9 @@ app.layout = html.Div([
 
 cryptos = list(coindf['Name'].values) #get all cryptos names
 
+################
+## Social Tab ##
+################
 
 @app.callback(Output('dbDaily', 'children'),
               Input('dbDaily', 'children'))
@@ -116,10 +124,6 @@ def tweetStream(dummy):
 def tweetStream(dummy):
     ts.tweet_stream(cryptos) #creates the twitter live stream
 
-
-
-
-import social
 
 #Create a header with choices
 @app.callback(Output('initSocial', 'children'),
@@ -145,10 +149,10 @@ def update_content(verified, sent, num):
 def loadList(verified, typeChoice, sent, num):
     return social.socialDrop(verified, typeChoice, sent)
 
+##################
+## Analysis Tab ##
+##################
 
-#Load analysis tab content
-########################
-import analysisTab
 @app.callback(Output('analysis', 'children'),
               [Input(component_id='sentiment_term', component_property='value'),
               Input('interval-component', 'n_intervals')])
@@ -219,14 +223,7 @@ def render_content(tab):
     ############
 
     if tab == 'tab-1':
-        return html.Div([
-            html.H3('Tab content Home'),
-            #html.H4('Explanation of our Project'),
-            #html.P('voici notre projet de advanced data analysis'),
-            #html.P('etudiants en master de finance')
-
-
-        ])
+        return homePage()
 
     #Technicals tab
     ############
