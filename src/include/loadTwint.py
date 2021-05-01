@@ -11,15 +11,7 @@ def loadTwint(cryptos):
 
     #Connect to db + create if not exists
     ##################
-    conn = sqlite3.connect('./include/twitter.db')
-    cSQL = conn.cursor()
-
-
-    cSQL.execute("DELETE FROM sentiment")
-    conn.commit()
-
-    cSQL.execute("CREATE TABLE IF NOT EXISTS sentiment(unix REAL, tweet TEXT, sentiment REAL, verified BOOLEAN)")
-    conn.commit()
+    conn = sqlite3.connect('./include/historicTwitter.db')
 
     #create new directory
     if not os.path.isdir('tempDailyTweets'):
@@ -27,7 +19,7 @@ def loadTwint(cryptos):
 
 
     #look for tweets for each crypto
-    for i in cryptos[:3]:
+    for i in cryptos:
 
         c = twint.Config()
 
@@ -37,10 +29,10 @@ def loadTwint(cryptos):
         c.Lang = "en"
         c.Min_replies = 1 # min replies
         c.Output = f"tempDailyTweets/dailyTweets.json"
-        c.Since = (dt.datetime.today() - dt.timedelta(1)).strftime('%Y-%m-%d') 
-        c.Until = dt.datetime.today().strftime('%Y-%m-%d')
+        c.Since = (dt.datetime.today() - dt.timedelta(days = 1)).strftime('%Y-%m-%d')
         c.Hide_output = True
         c.Store_json = True
+
 
         tweets = twint.run.Search(c)
 
@@ -59,7 +51,7 @@ def loadTwint(cryptos):
 
         if len(df) > 0:
             df.to_sql('sentiment', con = conn, if_exists = 'append', index = False)
-
+            conn.commit()
 
         df = df.iloc[0:0] #empty the dataframe
 

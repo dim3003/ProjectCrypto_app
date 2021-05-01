@@ -12,17 +12,9 @@ def tweet_stream(cryptos):
 
     analyser = SentimentIntensityAnalyzer()
 
-    #################
-    # Database config
-    #################
-
-    #Drop the db if already existing one in the app
-    conn = sqlite3.connect('./include/twitter.db')
+    #db connexion
+    conn = sqlite3.connect('./include/liveTwitter.db')
     c = conn.cursor()
-
-
-    c.execute("CREATE TABLE IF NOT EXISTS sentiment (tweet REAL, tweet TEXT, sentiment REAL, verified BOOLEAN)")
-    conn.commit()
 
 
     #Create a class to scrap stream of tweet

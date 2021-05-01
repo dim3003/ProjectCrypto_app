@@ -20,29 +20,49 @@ import include.tweet_stream as ts
 from collections import deque
 import dash_bootstrap_components as dbc
 
-def socialInit(verified, sent):
+def socialInit(sent):
 
     #Db update_content
     ##################
-    conn = sqlite3.connect('./include/twitter.db')
-    c = conn.cursor()
 
-    c.execute("CREATE TABLE IF NOT EXISTS sentiment(unix REAL, tweet TEXT, sentiment REAL, verified BOOLEAN)")
-    conn.commit()
+    #create live db
+    connLive = sqlite3.connect('./include/liveTwitter.db')
+    cLive = connLive.cursor()
 
-    df = pd.read_sql(f"SELECT * FROM sentiment WHERE tweet LIKE '%{sent}%' ORDER BY unix DESC LIMIT 1000", conn)
+    dfL = pd.read_sql(f"SELECT * FROM sentiment WHERE tweet LIKE '%{sent}%' ORDER BY unix", connLive)
+    connLive.commit()
+
+    connLive = sqlite3.connect('./include/liveTwitter.db')
+
+    #create historic db
+    connHist = sqlite3.connect('./include/historicTwitter.db')
+    cHist = connHist.cursor()
+
+    dfH = pd.read_sql(f"SELECT * FROM sentiment WHERE tweet LIKE '%{sent}%' ORDER BY unix", connHist)
+    connHist.commit()
+
+
+    #concatenate dataframes
+    if len(dfH) > 0:
+        df = pd.concat([dfL, dfH], sort=False)
+    else:
+        df = dfL
 
     #filters the database if verified only is selected
-    if verified == 'verifTweet':
-        df = df[df.verified == True]
+    #if verified == 'verifTweet':
+    #    df = df[df.verified == True]
 
     #smoothed sentiment value
     if len(df) < 5:
         df['smoothed_sentiment'] = (df['sentiment'] + 1) / 2
     elif 5 <= len(df) < 100: #takes all the db if its less than 100 to do the rolling mean otherwise takes half only
         df['smoothed_sentiment'] = (df['sentiment'].rolling(5).mean() + 1) / 2
-    else:
+    elif 100 <= len(df) < 1000: #takes all the db if its less than 100 to do the rolling mean otherwise takes half only
         df['smoothed_sentiment'] = (df['sentiment'].rolling(100).mean() + 1) / 2
+    elif 1000 <= len(df) < 3000: #takes all the db if its less than 100 to do the rolling mean otherwise takes half only
+        df['smoothed_sentiment'] = (df['sentiment'].rolling(400).mean() + 1) / 2
+    else:
+        df['smoothed_sentiment'] = (df['sentiment'].rolling(3000).mean() + 1) / 2
 
 
     # date column
@@ -58,21 +78,13 @@ def socialInit(verified, sent):
 def socialHeader(crypto):
     headerBlock = html.Div([
                     html.H3(f'Twitter live sentiment of {crypto}'),
-                    dcc.RadioItems(
-                        id='verifiedChoice',
-                        options=[
-                            {'label': 'All tweets', 'value': 'allTweet'},
-                            {'label': 'Verified author only', 'value': 'verifTweet'}
-                        ],
-                        value = 'allTweet',
-                        labelStyle={'display': 'inline-block', 'padding':'1em'}
-                    )],
+                    ],
                     style={'margin':'1em 1em 0 1em'})
 
     return headerBlock
 
-def socialGraph(verified, sent):
-    df = socialInit(verified, sent) #gets the data
+def socialGraph(sent):
+    df = socialInit(sent) #gets the data
 
     #Update Content
     ###############
@@ -88,7 +100,7 @@ def socialGraph(verified, sent):
     elif 100 <= len(df):
         lastSentiment = df['smoothed_sentiment'].iloc[-100] #if smoothed sentiment is on 100 last$
 
-    if len(df) > 10:
+    if len(df) > 0:
         content = html.Div([
                     html.Div(
                         dcc.Graph(
@@ -127,13 +139,14 @@ def socialGraph(verified, sent):
                             ), style={'width':'30%', 'display':'inline-block'})
                     ])
     else:
-        content = html.Div("LOADING GRAPHS ...", style={'width':'30%', 'display':'inline-block'})
+        content = html.Div("LOADING GRAPHS ...", style={'padding': '10em', 'display':'inline-block'})
 
     return content
 
 
-def socialDrop(verified, typeChoice, sent):
-    df = socialInit(verified, sent)
+def socialDrop(typeChoice, sent):
+
+    df = socialInit(sent)
 
     #last 10 tweets from the db
     if len(df.iloc[:, 1]) < 15:
@@ -149,7 +162,7 @@ def socialDrop(verified, typeChoice, sent):
     #create the content
 
     if len(df) == 0:
-        content = html.Div('Loading...', style={'padding':'2em'})
+        content = html.Div('Loading tweets...', style={'padding':'5em'})
     else:
         innerContent=[]
         for i in last:
