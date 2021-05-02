@@ -14,12 +14,7 @@ def loadTwint(sent, period):
         os.mkdir('tempTweets')
 
 
-    #look for tweets for the crypto
-    if period == 'daily' and os.path.isfile(f"tempTweets/dailyTweets{sent}.json") != 0: #guard if already fetched daily
-        return 0
-    elif period == 'monthly' and os.path.isfile(f"tempTweets/monthlyTweets{sent}.json") != 0: #guard if already fetched monthly
-        return 0
-    else:
+    def fetchTwint(period):
         c = twint.Config()
 
         c.Search = sent
@@ -61,5 +56,10 @@ def loadTwint(sent, period):
             if os.stat(f"tempTweets/{period}Tweets{sent}.json").st_size != 0:
                 cleanData(period) #checks if file is not empty
 
+    #look for tweets for the crypto
+    if os.path.isfile(f"tempTweets/dailyTweets{sent}.json") == 0: #guard if already fetched daily
+        fetchTwint('daily')
+    if os.path.isfile(f"tempTweets/monthlyTweets{sent}.json") == 0: #guard if already fetched monthly
+        fetchTwint('monthly')
 
     return 0
