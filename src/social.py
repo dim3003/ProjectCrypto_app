@@ -21,7 +21,7 @@ import include.tweet_stream as ts
 from collections import deque
 import dash_bootstrap_components as dbc
 
-def socialInit(sent):
+def socialInit(sent, period = 'daily'):
 
     #Db update_content
     ##################
@@ -36,14 +36,23 @@ def socialInit(sent):
     connLive = sqlite3.connect('./include/liveTwitter.db')
 
     #create historic db
-
-    if os.path.isfile(f"tempDailyTweets/dailyTweets{sent}.json"):
-        if os.stat(f"tempDailyTweets/dailyTweets{sent}.json").st_size != 0:
-            dfH = pd.read_json(f"tempDailyTweets/dailyTweets{sent}.json", lines = True, orient = 'records')
+    if period == 'daily':
+        if os.path.isfile(f"tempTweets/dailyTweets{sent}.json"):
+            if os.stat(f"tempTweets/dailyTweets{sent}.json").st_size != 0:
+                dfH = pd.read_json(f"tempTweets/dailyTweets{sent}.json", lines = True, orient = 'records')
+            else:
+                return pd.DataFrame()
         else:
             return pd.DataFrame()
     else:
-        return pd.DataFrame()
+        if os.path.isfile(f"tempTweets/monthlyTweets{sent}.json"):
+            if os.stat(f"tempTweets/monthlyTweets{sent}.json").st_size != 0:
+                dfH = pd.read_json(f"tempTweets/monthlyTweets{sent}.json", lines = True, orient = 'records')
+            else:
+                return pd.DataFrame()
+        else:
+            return pd.DataFrame()
+
 
 
     #concatenate dataframes
@@ -57,20 +66,21 @@ def socialInit(sent):
     #    df = df[df.verified == True]
 
     #smoothed sentiment value
-    if len(df) < 5:
-        df['smoothed_sentiment'] = (df['sentiment'] + 1) / 2
-    elif 5 <= len(df) < 100: #takes all the db if its less than 100 to do the rolling mean otherwise takes half only
-        df['smoothed_sentiment'] = (df['sentiment'].rolling(5).mean() + 1) / 2
-    elif 100 <= len(df) < 1000: #takes all the db if its less than 100 to do the rolling mean otherwise takes half only
-        df['smoothed_sentiment'] = (df['sentiment'].rolling(100).mean() + 1) / 2
-    elif 1000 <= len(df) < 3000: #takes all the db if its less than 100 to do the rolling mean otherwise takes half only
-        df['smoothed_sentiment'] = (df['sentiment'].rolling(400).mean() + 1) / 2
+    if period == 'daily':
+        if len(df) < 5:
+            df['smoothed_sentiment'] = (df['sentiment'] + 1) / 2
+        elif 5 <= len(df) < 100: #takes all the db if its less than 100 to do the rolling mean otherwise takes half only
+            df['smoothed_sentiment'] = (df['sentiment'].rolling(5).mean() + 1) / 2
+        elif 100 <= len(df) < 1000: #takes all the db if its less than 100 to do the rolling mean otherwise takes half only
+            df['smoothed_sentiment'] = (df['sentiment'].rolling(50).mean() + 1) / 2
+        else:
+            df['smoothed_sentiment'] = (df['sentiment'].rolling(100).mean() + 1) / 2
     else:
-        df['smoothed_sentiment'] = (df['sentiment'].rolling(3000).mean() + 1) / 2
+        df['smoothed_sentiment'] = (df['sentiment'].rolling(50).mean() + 1) / 2
 
 
     # date column
-    df['date'] = pd.to_datetime(df['unix'])
+    df['date'] = pd.to_datetime(df['unix'], unit = 'ms')
     if 'date' in df.columns:
         df.sort_values('date', inplace=True)
 
@@ -87,8 +97,8 @@ def socialHeader(crypto):
 
     return headerBlock
 
-def socialGraph(sent):
-    df = socialInit(sent) #gets the data
+def socialGraph(sent, period):
+    df = socialInit(sent, period) #gets the data
 
     #Update Content
     ###############
@@ -143,6 +153,10 @@ def socialGraph(sent):
                     ])
     else:
         content = html.Div("LOADING GRAPHS ...", style={'padding': '10em', 'display':'inline-block'})
+
+        if period == 'monthly':
+            content = html.Div("LOADING MONTHLY GRAPHS ... this could take a minute ...", style={'padding': '10em', 'display':'inline-block'})
+
 
     return content
 

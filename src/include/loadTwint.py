@@ -1,4 +1,4 @@
-def loadTwint(sent):
+def loadTwint(sent, period):
     import pandas as pd
     import twint
     import datetime as dt
@@ -8,31 +8,34 @@ def loadTwint(sent):
 
     analyzer = SentimentIntensityAnalyzer()
 
-    #Connect to db + create if not exists
-    ##################
-    conn = sqlite3.connect('./include/historicTwitter.db')
-    cSQL = conn.cursor()
-    cSQL.execute("DELETE FROM sentiment")
-    conn.commit()
-
 
     #create new directory
-    if not os.path.isdir('tempDailyTweets'):
-        os.mkdir('tempDailyTweets')
+    if not os.path.isdir('tempTweets'):
+        os.mkdir('tempTweets')
 
 
     #look for tweets for the crypto
-    if os.path.isfile(f"tempDailyTweets/dailyTweets{sent}.json") == 0:
+    if period == 'daily' and os.path.isfile(f"tempTweets/dailyTweets{sent}.json") != 0: #guard if already fetched daily
+        return 0
+    elif period == 'monthly' and os.path.isfile(f"tempTweets/monthlyTweets{sent}.json") != 0: #guard if already fetched monthly
+        return 0
+    else:
         c = twint.Config()
 
         c.Search = sent
         c.Custom["tweet"] = ["created_at", "tweet"]
         c.Verified = True
         c.Lang = "en"
-        if sent == "Bitcoin": #add a min replies for bitcoin because otherwise data overload
-            c.Min_replies = 1 # min replies
-        c.Output = f"tempDailyTweets/dailyTweets{sent}.json"
-        c.Since = (dt.datetime.today() - dt.timedelta(days = 1)).strftime('%Y-%m-%d')
+
+        if period == 'daily':
+            if sent == "Bitcoin": #add a min replies for bitcoin because otherwise too long to load
+                c.Min_replies = 1 # min replies
+            c.Since = (dt.datetime.today() - dt.timedelta(days = 1)).strftime('%Y-%m-%d')
+            c.Output = f"tempTweets/dailyTweets{sent}.json"
+        else:
+            c.Min_replies = 10 # min replies for monthly
+            c.Since = (dt.datetime.today() - dt.timedelta(days = 30)).strftime('%Y-%m-%d')
+            c.Output = f"tempTweets/monthlyTweets{sent}.json"
         c.Hide_output = True
         c.Store_json = True
 
@@ -40,18 +43,23 @@ def loadTwint(sent):
 
         #clean the json file
 
-        if os.path.isfile(f"tempDailyTweets/dailyTweets{sent}.json"):
-            if os.stat(f"tempDailyTweets/dailyTweets{sent}.json").st_size != 0: #checks if file is not empty
-                df = pd.read_json(f"tempDailyTweets/dailyTweets{sent}.json", lines = True, orient = 'records')
+        def cleanData(period = 'daily'):
+            df = pd.read_json(f"tempTweets/{period}Tweets{sent}.json", lines = True, orient = 'records')
 
-                df['unix'] = df['created_at'].view('int64') // 10**6 #transform dates to unix
-                df = df.drop('created_at', axis = 1)
-                df['sentiment'] = df['tweet'].apply(lambda x: analyzer.polarity_scores(x)['compound']) #creates sentiment for each tweet
-                df['verified'] = True
+            df['unix'] = df['created_at'].view('int64') // 10**6 #transform dates to unix
+            df = df.drop('created_at', axis = 1)
+            df['sentiment'] = df['tweet'].apply(lambda x: analyzer.polarity_scores(x)['compound']) #creates sentiment for each tweet
+            df['verified'] = True
 
-                df['tweet'] = df['tweet'].astype('string')
-                df['unix'] = df['unix'].astype('string')
+            df['tweet'] = df['tweet'].astype('string')
+            df['unix'] = df['unix'].astype('string')
 
-                df.to_json(f"tempDailyTweets/dailyTweets{sent}.json", lines = True, orient = 'records')
+            df.to_json(f"tempTweets/{period}Tweets{sent}.json", lines = True, orient = 'records')
+
+
+        if os.path.isfile(f"tempTweets/{period}Tweets{sent}.json"):
+            if os.stat(f"tempTweets/{period}Tweets{sent}.json").st_size != 0:
+                cleanData(period) #checks if file is not empty
+
 
     return 0

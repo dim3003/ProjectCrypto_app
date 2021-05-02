@@ -85,11 +85,16 @@ app.layout = html.Div([
                                                           html.Div(id = 'dbLoader'),
                                                           html.Div(id='initSocial',
                                                                    children = [html.Div(id = "headerSocial"),
+                                                                               dcc.Dropdown(id='tweetPeriod',
+                                                                                            options=[{'label': 'Daily tweets', 'value': 'daily'},
+                                                                                                    {'label': 'Monthly tweets', 'value': 'monthly'},
+                                                                                                    ],
+                                                                                            value = 'daily'),
                                                                               html.Div(id='initGraph'), #graphs block
                                                                               html.Div([ #dropdown block
                                                                               dcc.Dropdown(id='tweetDropdown',
                                                                                            options=[{'label': 'Most recent tweets', 'value': 'mrtweet'},
-                                                                                                   {'label': 'Most positive tweets (last 24h)', 'value': 'mptweet'}, # TO BE ADDED LATER WITH FULL DB
+                                                                                                   {'label': 'Most positive tweets (last 24h)', 'value': 'mptweet'},
                                                                                                    {'label': 'Most negative tweets (last 24h)', 'value': 'mntweet'}
                                                                                                    ],
                                                                                            value='mrtweet'),
@@ -130,15 +135,17 @@ cLive.execute("DELETE FROM sentiment")
 connLive.commit()
 
 #remove daily tweets if dir exists
-if os.path.isdir('tempDailyTweets'):
-    shutil.rmtree('tempDailyTweets')
+if os.path.isdir('tempTweets'):
+    shutil.rmtree('tempTweets')
 
 #Callbacks for content
 
 @app.callback(Output('dbDaily', 'children'),
-              Input('sentiment_term', 'value'))
-def tweetStream(sent):
-    loadTwint.loadTwint(sent) #creates twitter daily tweets
+              [Input('sentiment_term', 'value'),
+              Input('tweetPeriod', 'value')]
+              )
+def loadHistoric(sent, period):
+    loadTwint.loadTwint(sent, period) #creates twitter daily tweets
 
 
 @app.callback(Output('dbLoader', 'children'),
@@ -156,9 +163,10 @@ def loadHeader(crypto):
 #create graph content from social.py
 @app.callback(Output('initGraph', 'children'),
               [Input('sentiment_term', 'value'),
+               Input('tweetPeriod', 'value'),
                Input('social_interval', 'n_intervals')])
-def update_content(sent, num):
-    content = social.socialGraph(sent)
+def update_content(sent, period, num):
+    content = social.socialGraph(sent, period)
     return content
 
 #Tweet dropdown
