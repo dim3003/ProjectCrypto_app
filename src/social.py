@@ -12,6 +12,7 @@ import dash_table as dtable
 import plotly
 import logging
 import random
+import os
 import numpy as np
 from dash.dependencies import Output, State, Input
 import plotly.graph_objs as go
@@ -35,11 +36,14 @@ def socialInit(sent):
     connLive = sqlite3.connect('./include/liveTwitter.db')
 
     #create historic db
-    connHist = sqlite3.connect('./include/historicTwitter.db')
-    cHist = connHist.cursor()
 
-    dfH = pd.read_sql(f"SELECT * FROM sentiment WHERE tweet LIKE '%{sent}%' ORDER BY unix", connHist)
-    connHist.commit()
+    if os.path.isfile(f"tempDailyTweets/dailyTweets{sent}.json"):
+        if os.stat(f"tempDailyTweets/dailyTweets{sent}.json").st_size != 0:
+            dfH = pd.read_json(f"tempDailyTweets/dailyTweets{sent}.json", lines = True, orient = 'records')
+        else:
+            return pd.DataFrame()
+    else:
+        return pd.DataFrame()
 
 
     #concatenate dataframes
@@ -66,7 +70,7 @@ def socialInit(sent):
 
 
     # date column
-    df['date'] = pd.to_datetime(df['unix'],unit='ms')
+    df['date'] = pd.to_datetime(df['unix'])
     if 'date' in df.columns:
         df.sort_values('date', inplace=True)
 
@@ -90,7 +94,6 @@ def socialGraph(sent):
     ###############
 
     #last sentiment_term
-
     lastSentiment = 0
 
     if  5 >= len(df) >= 1:
@@ -148,24 +151,32 @@ def socialDrop(typeChoice, sent):
 
     df = socialInit(sent)
 
-    #last 10 tweets from the db
-    if len(df.iloc[:, 1]) < 15:
-        last = df.iloc[:10, 1]
-    else:
-        last = df.iloc[-10:, 1]
-        #check if unique tweets
-        i = 1
-        while len(pd.unique(last)) < 10:
-            last = pd.unique(df.iloc[-(10 + i):, 1])
-            i+=1
+    #if no content
+    content = html.Div('Loading tweets...', style={'padding':'5em'})
 
-    #create the content
+    if len(df) != 0:
+        #last 10 tweets from the db
+        tweets = df.iloc[:10, 1]
 
-    if len(df) == 0:
-        content = html.Div('Loading tweets...', style={'padding':'5em'})
-    else:
+        if len(df.iloc[:, 1]) > 15: #do some checks if we have enough tweets
+
+            if typeChoice == 'mptweet':
+                df.sort_values(by = ['sentiment'], inplace = True)
+                tweets = df.iloc[-10:, 1]
+            elif typeChoice == 'mntweet':
+                df.sort_values(by = ['sentiment'], ascending = False, inplace = True)
+                tweets = df.iloc[-10:, 1]
+            else:
+                tweets = df.iloc[-10:, 1]
+            #check if unique tweets
+            i = 1
+            while len(pd.unique(tweets)) < 10:
+                tweets = pd.unique(df.iloc[-(10 + i):, 1])
+                i+=1
+
+        #create the content
         innerContent=[]
-        for i in last:
+        for i in tweets:
             innerContent.append(html.Div(str(i)),)
             innerContent.append(html.Br(),)
         content=html.Div(innerContent, style={'padding':'2em'})

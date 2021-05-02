@@ -9,6 +9,8 @@ import dash_table as dtable
 import plotly
 import logging
 import random
+import os
+import shutil
 import numpy as np
 from dash.dependencies import Output, State, Input
 import plotly.graph_objs as go
@@ -87,8 +89,8 @@ app.layout = html.Div([
                                                                               html.Div([ #dropdown block
                                                                               dcc.Dropdown(id='tweetDropdown',
                                                                                            options=[{'label': 'Most recent tweets', 'value': 'mrtweet'},
-                                                                                                   #{'label': 'Most positive tweets (last 24h)', 'value': 'mptweet'}, # TO BE ADDED LATER WITH FULL DB
-                                                                                                   #{'label': 'Most negative tweets (last 24h)', 'value': 'mntweet'}
+                                                                                                   {'label': 'Most positive tweets (last 24h)', 'value': 'mptweet'}, # TO BE ADDED LATER WITH FULL DB
+                                                                                                   {'label': 'Most negative tweets (last 24h)', 'value': 'mntweet'}
                                                                                                    ],
                                                                                            value='mrtweet'),
                                                                               html.Div(id='tweetsList')])#close dropdown bloc
@@ -127,21 +129,16 @@ connLive.commit()
 cLive.execute("DELETE FROM sentiment")
 connLive.commit()
 
-connHist = sqlite3.connect('./include/historicTwitter.db')
-cHist = connHist.cursor()
-
-cHist.execute("CREATE TABLE IF NOT EXISTS sentiment (unix REAL, tweet TEXT, sentiment REAL, verified BOOLEAN)")
-connHist.commit()
-
-cHist.execute("DELETE FROM sentiment")
-connHist.commit()
+#remove daily tweets if dir exists
+if os.path.isdir('tempDailyTweets'):
+    shutil.rmtree('tempDailyTweets')
 
 #Callbacks for content
 
 @app.callback(Output('dbDaily', 'children'),
-              Input('dbDaily', 'children'))
-def tweetStream(dummy):
-    loadTwint.loadTwint(cryptos) #creates twitter daily tweets
+              Input('sentiment_term', 'value'))
+def tweetStream(sent):
+    loadTwint.loadTwint(sent) #creates twitter daily tweets
 
 
 @app.callback(Output('dbLoader', 'children'),
@@ -171,6 +168,7 @@ def update_content(sent, num):
               Input('social_drop_interval', 'n_intervals')])
 def loadList(typeChoice, sent, num):
     return social.socialDrop(typeChoice, sent)
+
 
 ##################
 ## Analysis Tab ##
