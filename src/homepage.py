@@ -16,21 +16,11 @@ import include.binance_stream as bs
 
 import plotly.figure_factory as ff
 
-def defineCard(title,text):
-    card_content = [
-        dbc.CardHeader(title),
-        dbc.CardBody(
-            [
-                html.H5(title, className="card-title"),
-                html.P(
-                    text,
-                    className="card-text",
-                ),
-            ]
-        ),
-    ]
+import base64
 
-    return card_content
+def card_person(img, name):
+    print()
+
 
 def homePage():
     card_content_tech = [
@@ -64,9 +54,25 @@ def homePage():
          ]
         ),
     ]
+    image_filename = 'IMG_5030.jpg' # replace with your own image
+    encoded_image = base64.b64encode(open(image_filename, 'rb').read())
+
+    # create a function
+    card_person = html.Div([
+        html.Div(html.Img(src='data:image/png;base64,{}'.format(encoded_image.decode()),className='rounded-circle',height=200,width=100),className="justify-content-center"),
+        html.H3("Guillaume Pavé",className="text-center"),
+        html.H5("guillaume.pave@unil.ch",className="text-center")
+    ],className="justify-content-center")
 
     return html.Div([
             html.H3('Welcome to our interface !',className="text-center mt-4"),
+            # add images
+            dbc.Row([
+                html.Div([card_person],className="m-4"),
+                html.Div([card_person],className="m-4"),
+                html.Div([card_person],className="m-4"),
+            ],className="justify-content-center m-4"),
+            
             html.H4('Explanation of our Project',className="text-center"),
             html.P('As part of a free project done during our master in Data science for Fiannce at the University of Lausanne, ',className="text-center"),
             html.P('we decided to propose an interface for anyone interested in the field of crypto currencies.',className="text-center"),
