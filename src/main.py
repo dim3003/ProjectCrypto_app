@@ -9,6 +9,8 @@ import dash_table as dtable
 import plotly
 import logging
 import random
+import os
+import shutil
 import numpy as np
 from dash.dependencies import Output, State, Input
 import plotly.graph_objs as go
@@ -47,7 +49,7 @@ app.layout = html.Div([
     dcc.Interval(
         id='social_interval',
         disabled=False,
-        interval=1*2000,
+        interval=1*4000,
         n_intervals=0
     ),
     dcc.Interval(
@@ -82,17 +84,23 @@ app.layout = html.Div([
                                               children = [html.Div(id = 'dbDaily'),
                                                           html.Div(id = 'dbLoader'),
                                                           html.Div(id='initSocial',
-                                                                   children = dcc.RadioItems(id='verifiedChoice',
-                                                                                             value = 'allTweet')),
+                                                                   children = [html.Div(id = "headerSocial"),
+                                                                               dcc.Dropdown(id='tweetPeriod',
+                                                                                            options=[{'label': 'Daily tweets', 'value': 'daily'},
+                                                                                                    {'label': 'Monthly tweets', 'value': 'monthly'},
+                                                                                                    ],
+                                                                                            value = 'daily'),
                                                                               html.Div(id='initGraph'), #graphs block
                                                                               html.Div([ #dropdown block
                                                                               dcc.Dropdown(id='tweetDropdown',
                                                                                            options=[{'label': 'Most recent tweets', 'value': 'mrtweet'},
-                                                                                                   #{'label': 'Most positive tweets (last 24h)', 'value': 'mptweet'}, # TO BE ADDED LATER WITH FULL DB
-                                                                                                   #{'label': 'Most negative tweets (last 24h)', 'value': 'mntweet'}
+                                                                                                   {'label': 'Most positive tweets (last 24h)', 'value': 'mptweet'},
+                                                                                                   {'label': 'Most negative tweets (last 24h)', 'value': 'mntweet'}
                                                                                                    ],
                                                                                            value='mrtweet'),
-                                                                              html.Div(id='tweetsList')])
+                                                                              html.Div(id='tweetsList')])#close dropdown bloc
+                                                                              ]#closes children list
+                                                                 )#close initSocial
                                     ]) #close id social div children
                         ])) #close dcc.Tab social + Tabs + Dropdown
 
@@ -113,10 +121,31 @@ cryptos = list(coindf['Name'].values) #get all cryptos names
 ## Social Tab ##
 ################
 
+# Database config
+#################
+
+#Drop the db if already existing one in the app
+connLive = sqlite3.connect('./include/liveTwitter.db')
+cLive = connLive.cursor()
+
+cLive.execute("CREATE TABLE IF NOT EXISTS sentiment (unix REAL, tweet TEXT, sentiment REAL, verified BOOLEAN)")
+connLive.commit()
+
+cLive.execute("DELETE FROM sentiment")
+connLive.commit()
+
+#remove daily tweets if dir exists
+if os.path.isdir('tempTweets'):
+    shutil.rmtree('tempTweets')
+
+#Callbacks for content
+
 @app.callback(Output('dbDaily', 'children'),
-              Input('dbDaily', 'children'))
-def tweetStream(dummy):
-    loadTwint.loadTwint(cryptos) #creates twitter daily tweets
+              [Input('sentiment_term', 'value'),
+              Input('tweetPeriod', 'value')]
+              )
+def loadHistoric(sent, period):
+    loadTwint.loadTwint(sent, period) #creates twitter daily tweets
 
 
 @app.callback(Output('dbLoader', 'children'),
@@ -126,28 +155,28 @@ def tweetStream(dummy):
 
 
 #Create a header with choices
-@app.callback(Output('initSocial', 'children'),
+@app.callback(Output('headerSocial', 'children'),
               Input('sentiment_term', 'value'))
 def loadHeader(crypto):
     return social.socialHeader(crypto)
 
 #create graph content from social.py
 @app.callback(Output('initGraph', 'children'),
-              [Input('verifiedChoice', 'value'),
-              Input('sentiment_term', 'value'),
+              [Input('sentiment_term', 'value'),
+               Input('tweetPeriod', 'value'),
                Input('social_interval', 'n_intervals')])
-def update_content(verified, sent, num):
-    content = social.socialGraph(verified, sent)
+def update_content(sent, period, num):
+    content = social.socialGraph(sent, period)
     return content
 
 #Tweet dropdown
 @app.callback(Output('tweetsList', 'children'),
-             [Input('verifiedChoice', 'value'),
-              Input('tweetDropdown', 'value'),
+             [Input('tweetDropdown', 'value'),
               Input('sentiment_term', 'value'),
               Input('social_drop_interval', 'n_intervals')])
-def loadList(verified, typeChoice, sent, num):
-    return social.socialDrop(verified, typeChoice, sent)
+def loadList(typeChoice, sent, num):
+    return social.socialDrop(typeChoice, sent)
+
 
 ##################
 ## Analysis Tab ##

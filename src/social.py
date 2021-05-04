@@ -12,6 +12,7 @@ import dash_table as dtable
 import plotly
 import logging
 import random
+import os
 import numpy as np
 from dash.dependencies import Output, State, Input
 import plotly.graph_objs as go
@@ -20,33 +21,66 @@ import include.tweet_stream as ts
 from collections import deque
 import dash_bootstrap_components as dbc
 
-def socialInit(verified, sent):
+def socialInit(sent, period = 'daily'):
 
     #Db update_content
     ##################
-    conn = sqlite3.connect('./include/twitter.db')
-    c = conn.cursor()
 
-    c.execute("CREATE TABLE IF NOT EXISTS sentiment(unix REAL, tweet TEXT, sentiment REAL, verified BOOLEAN)")
-    conn.commit()
+    #create live db
+    connLive = sqlite3.connect('./include/liveTwitter.db')
+    cLive = connLive.cursor()
 
-    df = pd.read_sql(f"SELECT * FROM sentiment WHERE tweet LIKE '%{sent}%' ORDER BY unix DESC LIMIT 1000", conn)
+    dfL = pd.read_sql(f"SELECT * FROM sentiment WHERE tweet LIKE '%{sent}%' ORDER BY unix", connLive)
+    connLive.commit()
+
+    connLive = sqlite3.connect('./include/liveTwitter.db')
+
+    #create historic db
+    if period == 'daily':
+        if os.path.isfile(f"tempTweets/dailyTweets{sent}.json"):
+            if os.stat(f"tempTweets/dailyTweets{sent}.json").st_size != 0:
+                dfH = pd.read_json(f"tempTweets/dailyTweets{sent}.json", lines = True, orient = 'records')
+            else:
+                return pd.DataFrame()
+        else:
+            return pd.DataFrame()
+    else:
+        if os.path.isfile(f"tempTweets/monthlyTweets{sent}.json"):
+            if os.stat(f"tempTweets/monthlyTweets{sent}.json").st_size != 0:
+                dfH = pd.read_json(f"tempTweets/monthlyTweets{sent}.json", lines = True, orient = 'records')
+            else:
+                return pd.DataFrame()
+        else:
+            return pd.DataFrame()
+
+
+
+    #concatenate dataframes
+    if len(dfH) > 0:
+        df = pd.concat([dfL, dfH], sort=False)
+    else:
+        df = dfL
 
     #filters the database if verified only is selected
-    if verified == 'verifTweet':
-        df = df[df.verified == True]
+    #if verified == 'verifTweet':
+    #    df = df[df.verified == True]
 
     #smoothed sentiment value
-    if len(df) < 5:
-        df['smoothed_sentiment'] = (df['sentiment'] + 1) / 2
-    elif 5 <= len(df) < 100: #takes all the db if its less than 100 to do the rolling mean otherwise takes half only
-        df['smoothed_sentiment'] = (df['sentiment'].rolling(5).mean() + 1) / 2
+    if period == 'daily':
+        if len(df) < 5:
+            df['smoothed_sentiment'] = (df['sentiment'] + 1) / 2
+        elif 5 <= len(df) < 100: #takes all the db if its less than 100 to do the rolling mean otherwise takes half only
+            df['smoothed_sentiment'] = (df['sentiment'].rolling(5).mean() + 1) / 2
+        elif 100 <= len(df) < 1000: #takes all the db if its less than 100 to do the rolling mean otherwise takes half only
+            df['smoothed_sentiment'] = (df['sentiment'].rolling(50).mean() + 1) / 2
+        else:
+            df['smoothed_sentiment'] = (df['sentiment'].rolling(100).mean() + 1) / 2
     else:
-        df['smoothed_sentiment'] = (df['sentiment'].rolling(100).mean() + 1) / 2
+        df['smoothed_sentiment'] = (df['sentiment'].rolling(50).mean() + 1) / 2
 
 
     # date column
-    df['date'] = pd.to_datetime(df['unix'],unit='ms')
+    df['date'] = pd.to_datetime(df['unix'], unit = 'ms')
     if 'date' in df.columns:
         df.sort_values('date', inplace=True)
 
@@ -58,27 +92,18 @@ def socialInit(verified, sent):
 def socialHeader(crypto):
     headerBlock = html.Div([
                     html.H3(f'Twitter live sentiment of {crypto}'),
-                    dcc.RadioItems(
-                        id='verifiedChoice',
-                        options=[
-                            {'label': 'All tweets', 'value': 'allTweet'},
-                            {'label': 'Verified author only', 'value': 'verifTweet'}
-                        ],
-                        value = 'allTweet',
-                        labelStyle={'display': 'inline-block', 'padding':'1em'}
-                    )],
+                    ],
                     style={'margin':'1em 1em 0 1em'})
 
     return headerBlock
 
-def socialGraph(verified, sent):
-    df = socialInit(verified, sent) #gets the data
+def socialGraph(sent, period):
+    df = socialInit(sent, period) #gets the data
 
     #Update Content
     ###############
 
     #last sentiment_term
-
     lastSentiment = 0
 
     if  5 >= len(df) >= 1:
@@ -88,7 +113,7 @@ def socialGraph(verified, sent):
     elif 100 <= len(df):
         lastSentiment = df['smoothed_sentiment'].iloc[-100] #if smoothed sentiment is on 100 last$
 
-    if len(df) > 10:
+    if len(df) > 0:
         content = html.Div([
                     html.Div(
                         dcc.Graph(
@@ -127,32 +152,45 @@ def socialGraph(verified, sent):
                             ), style={'width':'30%', 'display':'inline-block'})
                     ])
     else:
-        content = html.Div("LOADING GRAPHS ...", style={'width':'30%', 'display':'inline-block'})
+        content = html.Div("LOADING GRAPHS ...", style={'padding': '10em', 'display':'inline-block'})
+
+        if period == 'monthly':
+            content = html.Div("LOADING MONTHLY GRAPHS ... this could take a minute ...", style={'padding': '10em', 'display':'inline-block'})
+
 
     return content
 
 
-def socialDrop(verified, typeChoice, sent):
-    df = socialInit(verified, sent)
+def socialDrop(typeChoice, sent):
 
-    #last 10 tweets from the db
-    if len(df.iloc[:, 1]) < 15:
-        last = df.iloc[:10, 1]
-    else:
-        last = df.iloc[-10:, 1]
-        #check if unique tweets
-        i = 1
-        while len(pd.unique(last)) < 10:
-            last = pd.unique(df.iloc[-(10 + i):, 1])
-            i+=1
+    df = socialInit(sent)
 
-    #create the content
+    #if no content
+    content = html.Div('Loading tweets...', style={'padding':'5em'})
 
-    if len(df) == 0:
-        content = html.Div('Loading...', style={'padding':'2em'})
-    else:
+    if len(df) != 0:
+        #last 10 tweets from the db
+        tweets = df.iloc[:10, 1]
+
+        if len(df.iloc[:, 1]) > 15: #do some checks if we have enough tweets
+
+            if typeChoice == 'mptweet':
+                df.sort_values(by = ['sentiment'], inplace = True)
+                tweets = df.iloc[-10:, 1]
+            elif typeChoice == 'mntweet':
+                df.sort_values(by = ['sentiment'], ascending = False, inplace = True)
+                tweets = df.iloc[-10:, 1]
+            else:
+                tweets = df.iloc[-10:, 1]
+            #check if unique tweets
+            i = 1
+            while len(pd.unique(tweets)) < 10:
+                tweets = pd.unique(df.iloc[-(10 + i):, 1])
+                i+=1
+
+        #create the content
         innerContent=[]
-        for i in last:
+        for i in tweets:
             innerContent.append(html.Div(str(i)),)
             innerContent.append(html.Br(),)
         content=html.Div(innerContent, style={'padding':'2em'})
