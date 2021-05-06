@@ -33,3 +33,4 @@ pip install -r requirements.txt
 ## Bug
 
 * add values database (verified)
+* maj twint pour utiliser dans Heroku
