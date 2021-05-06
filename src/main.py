@@ -35,7 +35,7 @@ logging.basicConfig(filename='infos.log',level=logging.DEBUG, format='%(asctime)
 #############################
 
 app = dash.Dash(__name__,external_stylesheets=[dbc.themes.BOOTSTRAP])
-
+server = app.server
 global coindf
 coindf = webs.scrapCoin()
 

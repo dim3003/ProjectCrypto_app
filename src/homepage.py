@@ -16,23 +16,24 @@ import include.binance_stream as bs
 
 import plotly.figure_factory as ff
 
-def defineCard(title,text):
-    card_content = [
-        dbc.CardHeader(title),
-        dbc.CardBody(
-            [
-                html.H5(title, className="card-title"),
-                html.P(
-                    text,
-                    className="card-text",
-                ),
-            ]
-        ),
-    ]
+import base64
 
-    return card_content
+def card_person(name, img="image"):
+    image_filename = 'IMG_5030.jpg' # replace with your own image
+    encoded_image = base64.b64encode(open(image_filename, 'rb').read())
+    first_name, last_name = name.split(" ")[0].lower(), name.split(" ")[1].lower()
+    last_name = last_name.replace('é','e')
+    card_person = html.Div([
+        html.Div(html.Img(src='data:image/png;base64,{}'.format(encoded_image.decode()),className='rounded-circle mx-auto d-block',height=200,width=100),className="m-2"),
+        html.H3(name,className="text-center"),
+        html.H5(f"{first_name}.{last_name}@unil.ch",className="text-center")
+    ],className="justify-content-center")
+
+    return card_person
+
 
 def homePage():
+    
     card_content_tech = [
     dbc.CardHeader(html.H3("Technical tab")),
     dbc.CardBody(
@@ -57,16 +58,32 @@ def homePage():
     dbc.CardHeader(html.H3("Social tab")),
     dbc.CardBody(
         [   
-            html.P('In this tab, we want to give our users the possibility to get an overview of all the latest Reddit and Tweeter posts referring to the selected cryptocurrency.'),
+            html.P('In this tab, we want to give our users the possibility to get an overview of all the latest Twitter posts referring to the selected cryptocurrency.'),
             html.P('In addition, we have implemented a sentiment analysis algorithm, which classifies each publication according to its positive or negative impact on the price.'),
             html.P('All of this is synthesized in a dynamic graph that is essential for any investment decision.'),
             
          ]
         ),
     ]
+    image_filename = 'IMG_5030.jpg' # replace with your own image
+    encoded_image = base64.b64encode(open(image_filename, 'rb').read())
+
+    # create a function
+    card_persons = html.Div([
+        html.Div(html.Img(src='data:image/png;base64,{}'.format(encoded_image.decode()),className='rounded-circle',height=200,width=400),className=""),
+        html.H3("Guillaume Pavé",className="text-center"),
+        html.H5("guillaume.pave@unil.ch",className="text-center")
+    ],className="justify-content-center")
 
     return html.Div([
             html.H3('Welcome to our interface !',className="text-center mt-4"),
+            # add images
+            dbc.Row([
+                html.Div([card_person(name='Dimitri André')],className="m-4"),
+                html.Div([card_person("Guillaume Pavé")],className="m-4"),
+                html.Div([card_person("Ruben Kempter")],className="m-4"),
+            ],className="justify-content-center m-4"),
+            
             html.H4('Explanation of our Project',className="text-center"),
             html.P('As part of a free project done during our master in Data science for Fiannce at the University of Lausanne, ',className="text-center"),
             html.P('we decided to propose an interface for anyone interested in the field of crypto currencies.',className="text-center"),
