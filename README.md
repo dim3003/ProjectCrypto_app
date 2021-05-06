@@ -11,20 +11,20 @@ git clone https://github.com/GuillaumePv/ProjetCrypto_app.git
 2) installer les librairies nécessaires pour le projet
 
 ```bash
-pip install -r requirements.txt
+pip3 install -r requirements.txt
 ```
 
 ## TO-DO
 - [ ] augmenter la vitesse de loading
-- [ ] ajouter des stats dexcriptives au projet
+- [x] ajouter des stats dexcriptives au projet
 - [ ] ML Model 
-- [ ] arreter flux de tweet
-- [ ] data
-- [ ] trouver les indicateurs
-- [ ] cleaning data
+- [x] arreter flux de tweet
+- [x] trouver les indicateurs
+- [x] cleaning data
 - [ ] tester les différents algos sur bitcoin
 - [ ] tester sur les autres cryptos
-- [ ] faire une libraries pour le layout
+- [x] faire une libraries pour le layout
+- [ ] faire fonctionner twint sur heroku
 
 ## Code
 
