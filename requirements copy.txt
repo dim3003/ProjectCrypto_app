@@ -87,7 +87,7 @@ soupsieve==2.2
 tornado==6.1
 traitlets==5.0.5
 tweepy==3.10.0
-twint==2.1.20
+twint==2.1.21
 Twisted==21.2.0
 txaio==21.2.1
 typing-extensions==3.7.4.3
