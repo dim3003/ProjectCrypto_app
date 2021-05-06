@@ -18,8 +18,8 @@ import plotly.figure_factory as ff
 
 import base64
 
-def card_person(name, img="image"):
-    image_filename = 'IMG_5030.jpg' # replace with your own image
+def card_person(name, img):
+    image_filename = f'./static/{img}' # replace with your own image
     encoded_image = base64.b64encode(open(image_filename, 'rb').read())
     first_name, last_name = name.split(" ")[0].lower(), name.split(" ")[1].lower()
     last_name = last_name.replace('é','e')
@@ -65,23 +65,13 @@ def homePage():
          ]
         ),
     ]
-    image_filename = 'IMG_5030.jpg' # replace with your own image
-    encoded_image = base64.b64encode(open(image_filename, 'rb').read())
-
-    # create a function
-    card_persons = html.Div([
-        html.Div(html.Img(src='data:image/png;base64,{}'.format(encoded_image.decode()),className='rounded-circle',height=200,width=400),className=""),
-        html.H3("Guillaume Pavé",className="text-center"),
-        html.H5("guillaume.pave@unil.ch",className="text-center")
-    ],className="justify-content-center")
-
     return html.Div([
             html.H3('Welcome to our interface !',className="text-center mt-4"),
             # add images
             dbc.Row([
-                html.Div([card_person(name='Dimitri André')],className="m-4"),
-                html.Div([card_person("Guillaume Pavé")],className="m-4"),
-                html.Div([card_person("Ruben Kempter")],className="m-4"),
+                html.Div([card_person(name='Dimitri André',img='Dim_andre.jpg')],className="m-4"),
+                html.Div([card_person("Guillaume Pavé", img='GP.jpg')],className="m-4"),
+                html.Div([card_person("Ruben Kempter", img='GP.jpg')],className="m-4"),
             ],className="justify-content-center m-4"),
             
             html.H4('Explanation of our Project',className="text-center"),
