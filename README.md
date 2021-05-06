@@ -25,6 +25,8 @@ pip3 install -r requirements.txt
 - [ ] tester sur les autres cryptos
 - [x] faire une libraries pour le layout
 - [ ] faire fonctionner twint sur heroku
+- [ ] Ecrire le rapport
+- [ ] tourner la vidéo de présentation
 
 ## Code
 
