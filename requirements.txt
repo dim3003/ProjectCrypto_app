@@ -1,4 +1,8 @@
+aiodns==2.0.0
+aiohttp==3.7.4.post0
+aiohttp-socks==0.4.1
 appnope==0.1.2
+async-timeout==3.0.1
 attrs==20.3.0
 autobahn==21.2.2
 Automat==20.2.0
@@ -6,6 +10,7 @@ backcall==0.2.0
 beautifulsoup4==4.9.3
 Brotli==1.0.9
 bs4==0.0.1
+cchardet==2.1.7
 certifi==2020.12.5
 cffi==1.14.5
 chardet==4.0.0
@@ -19,13 +24,20 @@ dash-core-components==1.15.0
 dash-html-components==1.1.2
 dash-renderer==1.9.0
 dash-table==4.11.2
+dataclasses==0.6
 dateparser==1.0.0
 decorator==4.4.2
+elasticsearch==7.12.1
+fake-useragent==0.1.11
 Flask==1.1.2
 Flask-Compress==1.9.0
 future==0.18.2
+geographiclib==1.50
+geopy==2.1.0
 gevent==21.1.2
+googletransx==2.4.2
 greenlet==1.0.0
+gunicorn==20.1.0
 hyperlink==21.0.0
 idna==2.10
 incremental==17.5.0
@@ -40,6 +52,7 @@ jupyter-core==4.7.1
 kiwisolver==1.3.1
 MarkupSafe==1.1.1
 matplotlib==3.3.4
+multidict==5.1.0
 numpy==1.20.1
 oauthlib==3.1.0
 pandas==1.2.2
@@ -52,6 +65,7 @@ prompt-toolkit==3.0.17
 ptyprocess==0.7.0
 pyasn1==0.4.8
 pyasn1-modules==0.2.8
+pycares==3.1.1
 pycparser==2.20
 Pygments==2.8.1
 pyOpenSSL==20.0.1
@@ -65,6 +79,7 @@ regex==2020.11.13
 requests==2.25.1
 requests-oauthlib==1.3.0
 retrying==1.3.3
+schedule==1.1.0
 scipy==1.6.1
 service-identity==18.1.0
 six==1.15.0
@@ -72,8 +87,10 @@ soupsieve==2.2
 tornado==6.1
 traitlets==5.0.5
 tweepy==3.10.0
+twint==2.1.21
 Twisted==21.2.0
 txaio==21.2.1
+typing-extensions==3.7.4.3
 tzlocal==2.1
 ujson==4.0.2
 Unidecode==1.2.0
@@ -83,5 +100,6 @@ wcwidth==0.2.5
 websocket==0.2.1
 websocket-client==0.58.0
 Werkzeug==1.0.1
+yarl==1.6.3
 zope.event==4.5.0
 zope.interface==5.2.0

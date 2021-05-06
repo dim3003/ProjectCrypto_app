@@ -24,6 +24,7 @@ pip install -r requirements.txt
 -- cleaning data
 -- tester les différents algos sur bitcoin
 -- tester sur les autres cryptos
+-- faire une libraries pour le layout
 
 ## Code
 
