@@ -15,16 +15,16 @@ pip install -r requirements.txt
 ```
 
 ## TO-DO
-* augmenter la vitesse de loading
-* ajouter des stats dexcriptives au projet
-* ML Model 
-* arreter flux de tweet
--[] data
--- trouver les indicateurs
--- cleaning data
--- tester les différents algos sur bitcoin
--- tester sur les autres cryptos
--- faire une libraries pour le layout
+- [ ] augmenter la vitesse de loading
+- [ ] ajouter des stats dexcriptives au projet
+- [ ] ML Model 
+- [ ] arreter flux de tweet
+- [ ] data
+- [ ] trouver les indicateurs
+- [ ] cleaning data
+- [ ] tester les différents algos sur bitcoin
+- [ ] tester sur les autres cryptos
+- [ ] faire une libraries pour le layout
 
 ## Code
 
